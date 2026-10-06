@@ -22,7 +22,7 @@ The Windows desktop client is a single `EmPoriumHouse.exe`, packaged as a zip on
 
 1. Open [Releases](https://github.com/MatrixCode-ID/EmPorium-House/releases) and download `EmPorium-House.<version>.zip` from the **Assets** list of the newest release.
 2. Extract the zip and run `EmPoriumHouse.exe`. It is self-contained (Windows 10/11, x64): no .NET installation is needed.
-3. Connect to an EmPorium House server: start one with [Run with Docker](#run-with-docker), then add its address (for example `http://localhost:5232`) with the connection settings button on the login screen, pick it in the server list, and sign in.
+3. Connect to an EmPorium House server: start one with [Run with Docker](#run-with-docker), then add its address (for example `http://localhost:5232`) with the connection settings button on the login screen, pick it in the server list, and sign in (for the first sign-in see [First admin sign-in](#first-admin-sign-in)).
 
 Alpha builds are marked **Pre-release** and the executable is not code-signed yet, so Windows SmartScreen may warn about an unknown publisher: choose **More info → Run anyway** if you trust the download.
 
@@ -121,7 +121,7 @@ The API listens on `http://localhost:5232` by default (em-system's own `Em.Api` 
 
 The server is released as a container image, `ghcr.io/matrixcode-id/emporium-server`. You need Docker with Linux containers (Compose v2.24+) and the database described in [Requirements](#requirements).
 
-**1. Prepare the config file.** Copy [`emapi-config.example.json`](src/backend/EmPoriumHouse.Api/emapi-config.example.json) to `emapi-config.docker.json` next to your compose file and fill in `database.connectionString` and `admin.initialPassword`. Inside a container `localhost` is the container itself, so for SQL Server on the Docker host use `Server=host.docker.internal,1433` with SQL authentication (Windows authentication is not available on Linux containers). Keep this file out of Git.
+**1. Prepare the config file.** Copy [`emapi-config.example.json`](src/backend/EmPoriumHouse.Api/emapi-config.example.json) to `emapi-config.docker.json` next to your compose file and fill in `database.connectionString` and `admin.initialPassword` (the password of the first admin account, see [First admin sign-in](#first-admin-sign-in)). Inside a container `localhost` is the container itself, so for SQL Server on the Docker host use `Server=host.docker.internal,1433` with SQL authentication (Windows authentication is not available on Linux containers). Keep this file out of Git.
 
 **2. Docker Compose** (recommended). Save as `compose.yml`, then run `docker compose up -d`:
 
@@ -137,6 +137,8 @@ services:
     environment:
       EM_API_CONFIG: /run/secrets/emapi-config
       ASPNETCORE_ENVIRONMENT: Production
+      # Optional: overrides admin.initialPassword from the config file (see "First admin sign-in").
+      # EM_ADMIN_INITIAL_PASSWORD: ${EM_ADMIN_INITIAL_PASSWORD}
     ports:
       - "127.0.0.1:5232:8080"
     extra_hosts:
@@ -169,6 +171,39 @@ docker run --detach --name emporium-server --hostname emporium-house-api --init 
 The API is then available at `http://localhost:5232`; follow the logs with `docker logs -f emporium-server`. Keep the `--hostname` fixed and keep the data volume: it holds the CDN, registry and NuGet files, and `docker compose down --volumes` deletes it. The image serves plain HTTP only, so put a TLS reverse proxy in front for anything public.
 
 Advanced settings (building the image from source, all environment variables and parameters, storage layout, public deployment, troubleshooting) are in [Container setup](doc/setup-container.md). The shared Rider run configuration is in the [backend README](src/backend/README.md).
+
+## First admin sign-in
+
+The server creates its built-in `admin` account the first time it starts against a new database. Its password comes from the `admin.initialPassword` setting, which you can give in either of two ways:
+
+**In the config file** (what the steps above use): `"admin": { "initialPassword": "<password>" }` in `emapi-config.docker.json`. This works the same for Compose and `docker run`, because both mount that file.
+
+**With an environment variable**, which overrides the file: `EM_ADMIN_INITIAL_PASSWORD`. An empty variable is ignored and the value from the file is used.
+
+- *Docker Compose:* remove the `#` before `EM_ADMIN_INITIAL_PASSWORD` in the compose file above, and provide the value from your shell or from a `.env` file next to `compose.yml` (keep `.env` out of Git):
+
+  ```powershell
+  $env:EM_ADMIN_INITIAL_PASSWORD = Read-Host 'Initial admin password'
+  docker compose up -d
+  ```
+
+- *`docker run`:* add one more `--env` line to the command above, taking the value from your shell so it does not end up in a script or in the shell history:
+
+  ```powershell
+  $env:EM_ADMIN_INITIAL_PASSWORD = Read-Host 'Initial admin password'
+  docker run ... --env "EM_ADMIN_INITIAL_PASSWORD=$env:EM_ADMIN_INITIAL_PASSWORD" ... ghcr.io/matrixcode-id/emporium-server:alpha
+  ```
+
+Two things to know:
+
+1. **The password is only used once.** It is stored as a hash in the database the first time the server starts. Changing the setting afterwards does not change the existing password, so choose a strong one before the first start.
+2. **The `admin` account is disabled on a new database**, so that a password written in a config file is never an open door by itself. Start the server once (it creates its settings), then enable the account directly in the database:
+
+   ```powershell
+   sqlcmd -S localhost -d EmPorium -E -Q "UPDATE ta_Meta SET cMetaValue = 'True' WHERE cMetaKey = 'AdminUserEnable'"
+   ```
+
+   Now sign in as `admin` with the initial password. Once you have a regular account with the permissions you need, set the value back to `'False'`.
 
 ## Engine documentation
 
