@@ -1,5 +1,8 @@
 # EmPorium House
 
+[![Release](https://img.shields.io/github/v/release/MatrixCode-ID/EmPorium-House?include_prereleases&label=release)](https://github.com/MatrixCode-ID/EmPorium-House/releases)
+[![License: MIT](https://img.shields.io/github/license/MatrixCode-ID/EmPorium-House)](LICENSE)
+
 **Developer infrastructure platform.** *Self-hosted. Fully stocked.*
 
 EmPorium House is a self-hosted developer infrastructure platform by **Matrix Code**: CDN, container registry, and NuGet server.
@@ -11,7 +14,17 @@ EmPorium House is a self-hosted developer infrastructure platform by **Matrix Co
 > that switch those features on, the EmPorium House home screen and its cards, and the product's branding and
 > configuration.
 
-The project is in early development: the server container image is published on the `alpha` channel only. Licensed under [MIT](LICENSE).
+The project is in early development: the server container image and the desktop client are published on the `alpha` channel only. Licensed under [MIT](LICENSE).
+
+## Download the desktop client
+
+The Windows desktop client is a single `EmPoriumHouse.exe`, packaged as a zip on the [**Releases**](https://github.com/MatrixCode-ID/EmPorium-House/releases) page.
+
+1. Open [Releases](https://github.com/MatrixCode-ID/EmPorium-House/releases) and download `EmPorium-House.<version>.zip` from the **Assets** list of the newest release.
+2. Extract the zip and run `EmPoriumHouse.exe`. It is self-contained (Windows 10/11, x64): no .NET installation is needed.
+3. Connect to an EmPorium House server: start one with [Run with Docker](#run-with-docker), then add its address (for example `http://localhost:5232`) with the connection settings button on the login screen, pick it in the server list, and sign in.
+
+Alpha builds are marked **Pre-release** and the executable is not code-signed yet, so Windows SmartScreen may warn about an unknown publisher: choose **More info → Run anyway** if you trust the download.
 
 ## What comes from where
 
