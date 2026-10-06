@@ -1,0 +1,578 @@
+<UserControl x:Class="EmPoriumHouse.Home.EmPoriumHomeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:EmPoriumHouse.Home"
+             xmlns:fa="http://schemas.fontawesome.com/icons/fonts"
+             mc:Ignorable="d"
+             d:DesignHeight="760" d:DesignWidth="1100">
+   <UserControl.DataContext>
+      <local:EmPoriumHomeVm />
+   </UserControl.DataContext>
+
+   <!--
+      EmPorium House home (single-page layout). Top to bottom: a hero with the product name and the
+      session, one card per module with live numbers and the address a developer actually types,
+      shortcuts to administration, and any menu entries other modules register.
+
+      Colours follow the same rule as the engine's own home: translucent greys plus the theme accent
+      token, so one set of markup reads on a light and on a dark theme. Text colour is never stated;
+      it is inherited from the window, which is the only value the theme re-colours.
+   -->
+   <UserControl.Resources>
+
+      <!-- ============================================================
+           PALETTE
+           ============================================================ -->
+      <SolidColorBrush x:Key="surfaceBrush" Color="#0D808080" />
+      <SolidColorBrush x:Key="surfaceHoverBrush" Color="#1F808080" />
+      <SolidColorBrush x:Key="surfacePressedBrush" Color="#2E808080" />
+      <SolidColorBrush x:Key="outlineBrush" Color="#33808080" />
+
+      <!-- Status dots. Fixed colours on purpose: green/amber/grey keep their meaning on either theme. -->
+      <SolidColorBrush x:Key="statusReadyBrush" Color="#2EA043" />
+      <SolidColorBrush x:Key="statusWarningBrush" Color="#D29922" />
+      <SolidColorBrush x:Key="statusOffBrush" Color="#8B949E" />
+
+      <!-- ============================================================
+           TEXT
+           ============================================================ -->
+      <Style x:Key="sectionCaptionStyle" TargetType="TextBlock">
+         <Setter Property="FontSize" Value="10.5" />
+         <Setter Property="FontWeight" Value="Bold" />
+         <Setter Property="Opacity" Value="0.6" />
+         <Setter Property="Margin" Value="4,0,0,10" />
+      </Style>
+
+      <Style x:Key="mutedTextStyle" TargetType="TextBlock">
+         <Setter Property="FontSize" Value="12" />
+         <Setter Property="Opacity" Value="0.75" />
+         <Setter Property="TextWrapping" Value="Wrap" />
+      </Style>
+
+      <!-- ============================================================
+           ICON PLATE
+           Accent-tinted rounded square. The tint is its own Border so lowering its opacity does not
+           wash out the glyph drawn over it.
+           ============================================================ -->
+      <Style x:Key="plateFillStyle" TargetType="Border">
+         <Setter Property="CornerRadius" Value="12" />
+         <Setter Property="Opacity" Value="0.14" />
+         <Setter Property="Background" Value="{DynamicResource themeAccentBrush}" />
+      </Style>
+
+      <Style x:Key="plateIconStyle" TargetType="fa:FontAwesome">
+         <Setter Property="HorizontalAlignment" Value="Center" />
+         <Setter Property="VerticalAlignment" Value="Center" />
+         <Setter Property="Foreground" Value="{DynamicResource themeAccentBrush}" />
+      </Style>
+
+      <!-- ============================================================
+           CHIP (session and server in the hero)
+           ============================================================ -->
+      <Style x:Key="chipStyle" TargetType="Border">
+         <Setter Property="CornerRadius" Value="14" />
+         <Setter Property="Padding" Value="12,6" />
+         <Setter Property="Margin" Value="0,0,0,8" />
+         <Setter Property="HorizontalAlignment" Value="Right" />
+         <Setter Property="Background" Value="{StaticResource surfaceBrush}" />
+         <Setter Property="BorderThickness" Value="1" />
+         <Setter Property="BorderBrush" Value="{StaticResource outlineBrush}" />
+      </Style>
+
+      <!-- ============================================================
+           BUTTONS
+           ============================================================ -->
+      <Style x:Key="primaryButtonStyle" TargetType="Button">
+         <Setter Property="Cursor" Value="Hand" />
+         <Setter Property="FontSize" Value="12.5" />
+         <Setter Property="FontWeight" Value="SemiBold" />
+         <Setter Property="Template">
+            <Setter.Value>
+               <ControlTemplate TargetType="Button">
+                  <Border x:Name="plate"
+                          CornerRadius="10"
+                          Padding="16,10"
+                          Background="{DynamicResource themeAccentBrush}">
+                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <ContentPresenter TextElement.Foreground="White" VerticalAlignment="Center" />
+                        <fa:FontAwesome Icon="Solid_ArrowRight"
+                                        FontSize="11"
+                                        Margin="10,0,0,0"
+                                        Foreground="White"
+                                        VerticalAlignment="Center" />
+                     </StackPanel>
+                  </Border>
+                  <ControlTemplate.Triggers>
+                     <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="plate" Property="Opacity" Value="0.88" />
+                     </Trigger>
+                     <Trigger Property="IsPressed" Value="True">
+                        <Setter TargetName="plate" Property="Opacity" Value="0.75" />
+                     </Trigger>
+                     <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="plate" Property="Opacity" Value="0.35" />
+                     </Trigger>
+                  </ControlTemplate.Triggers>
+               </ControlTemplate>
+            </Setter.Value>
+         </Setter>
+      </Style>
+
+      <Style x:Key="iconButtonStyle" TargetType="Button">
+         <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+         <Setter Property="Width" Value="26" />
+         <Setter Property="Height" Value="26" />
+         <Setter Property="Cursor" Value="Hand" />
+         <Setter Property="Background" Value="Transparent" />
+         <Setter Property="BorderThickness" Value="0" />
+         <Setter Property="Template">
+            <Setter.Value>
+               <ControlTemplate TargetType="Button">
+                  <Border x:Name="plate" CornerRadius="8" Background="{TemplateBinding Background}">
+                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                  <ControlTemplate.Triggers>
+                     <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="plate" Property="Background" Value="{StaticResource surfaceHoverBrush}" />
+                     </Trigger>
+                     <Trigger Property="IsPressed" Value="True">
+                        <Setter TargetName="plate" Property="Background" Value="{StaticResource surfacePressedBrush}" />
+                     </Trigger>
+                     <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="plate" Property="Opacity" Value="0.4" />
+                     </Trigger>
+                  </ControlTemplate.Triggers>
+               </ControlTemplate>
+            </Setter.Value>
+         </Setter>
+      </Style>
+
+      <Style x:Key="serverToggleStyle" TargetType="ToggleButton">
+         <Setter Property="Width" Value="48" />
+         <Setter Property="Height" Value="32" />
+         <Setter Property="Cursor" Value="Hand" />
+         <Setter Property="Template">
+            <Setter.Value>
+               <ControlTemplate TargetType="ToggleButton">
+                  <Border x:Name="focus" CornerRadius="15" BorderThickness="1" BorderBrush="Transparent" Background="Transparent" Padding="3">
+                     <Grid>
+                        <Border x:Name="track" CornerRadius="12" Background="{StaticResource surfacePressedBrush}"
+                                BorderBrush="{StaticResource outlineBrush}" BorderThickness="1" />
+                        <Ellipse x:Name="thumb" Width="16" Height="16" Margin="3,0"
+                                 HorizontalAlignment="Left" Fill="{DynamicResource themeWindowForegroundBrush}" />
+                     </Grid>
+                  </Border>
+                  <ControlTemplate.Triggers>
+                     <Trigger Property="IsChecked" Value="True">
+                        <Setter TargetName="track" Property="Background" Value="{DynamicResource themeAccentBrush}" />
+                        <Setter TargetName="thumb" Property="HorizontalAlignment" Value="Right" />
+                        <Setter TargetName="thumb" Property="Fill" Value="{DynamicResource themeWindowBackgroundBrush}" />
+                     </Trigger>
+                     <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="focus" Property="Background" Value="{StaticResource surfaceHoverBrush}" />
+                     </Trigger>
+                     <Trigger Property="IsKeyboardFocused" Value="True">
+                        <Setter TargetName="focus" Property="BorderBrush" Value="{DynamicResource themeAccentBrush}" />
+                     </Trigger>
+                     <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="focus" Property="Opacity" Value="0.4" />
+                     </Trigger>
+                  </ControlTemplate.Triggers>
+               </ControlTemplate>
+            </Setter.Value>
+         </Setter>
+         <Style.Triggers>
+            <DataTrigger Binding="{Binding HasToggle}" Value="False">
+               <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+         </Style.Triggers>
+      </Style>
+
+      <!-- ============================================================
+           SHORTCUT TILE
+           Flat until hovered, then a surface tint, an outline and a soft shadow.
+           ============================================================ -->
+      <!-- A Button gets its text colour from the framework's own button style (black), which beats
+           inheritance from the window, so on a dark theme the tile text would be unreadable. Taking the
+           colour from this screen restores the inherited, themed one. -->
+      <Style x:Key="tileButtonStyle" TargetType="Button">
+         <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+         <Setter Property="MinWidth" Value="240" />
+         <Setter Property="Margin" Value="0,3,14,3" />
+         <Setter Property="Padding" Value="10,8" />
+         <Setter Property="Cursor" Value="Hand" />
+         <Setter Property="HorizontalContentAlignment" Value="Left" />
+         <Setter Property="Template">
+            <Setter.Value>
+               <ControlTemplate TargetType="Button">
+                  <Border x:Name="tile"
+                          CornerRadius="12"
+                          Background="Transparent"
+                          BorderThickness="1"
+                          BorderBrush="Transparent"
+                          Padding="{TemplateBinding Padding}">
+                     <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" />
+                  </Border>
+                  <ControlTemplate.Triggers>
+                     <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="tile" Property="Background" Value="{StaticResource surfaceBrush}" />
+                        <Setter TargetName="tile" Property="BorderBrush" Value="{StaticResource outlineBrush}" />
+                        <Setter TargetName="tile" Property="Effect">
+                           <Setter.Value>
+                              <DropShadowEffect BlurRadius="12" ShadowDepth="1" Direction="270"
+                                                Opacity="0.18" Color="#000000" />
+                           </Setter.Value>
+                        </Setter>
+                     </Trigger>
+                     <Trigger Property="IsPressed" Value="True">
+                        <Setter TargetName="tile" Property="Background" Value="{StaticResource surfacePressedBrush}" />
+                        <Setter TargetName="tile" Property="Effect" Value="{x:Null}" />
+                     </Trigger>
+                     <Trigger Property="IsKeyboardFocused" Value="True">
+                        <Setter TargetName="tile" Property="BorderBrush" Value="{DynamicResource themeAccentBrush}" />
+                     </Trigger>
+                  </ControlTemplate.Triggers>
+               </ControlTemplate>
+            </Setter.Value>
+         </Setter>
+      </Style>
+
+      <DataTemplate x:Key="tileTemplate" DataType="{x:Type local:HomeTile}">
+         <Button Style="{StaticResource tileButtonStyle}" Command="{Binding Command}">
+            <StackPanel Orientation="Horizontal">
+               <Grid Width="38" Height="38" VerticalAlignment="Center">
+                  <Border Style="{StaticResource plateFillStyle}" CornerRadius="11" />
+                  <Image Source="{Binding Icon}"
+                         Width="18" Height="18"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                         RenderOptions.BitmapScalingMode="HighQuality" />
+               </Grid>
+               <StackPanel Margin="12,0,4,0" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding Title}"
+                             FontSize="12.5" FontWeight="SemiBold"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Text="{Binding SubTitle}"
+                             FontSize="10.5" Opacity="0.75" Margin="0,1,0,0"
+                             TextTrimming="CharacterEllipsis">
+                     <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                           <Style.Triggers>
+                              <Trigger Property="Text" Value="">
+                                 <Setter Property="Visibility" Value="Collapsed" />
+                              </Trigger>
+                           </Style.Triggers>
+                        </Style>
+                     </TextBlock.Style>
+                  </TextBlock>
+               </StackPanel>
+            </StackPanel>
+         </Button>
+      </DataTemplate>
+
+      <Style x:Key="tilesHostStyle" TargetType="ItemsControl">
+         <Setter Property="ItemTemplate" Value="{StaticResource tileTemplate}" />
+         <Setter Property="ItemsPanel">
+            <Setter.Value>
+               <ItemsPanelTemplate>
+                  <WrapPanel />
+               </ItemsPanelTemplate>
+            </Setter.Value>
+         </Setter>
+      </Style>
+
+      <!-- ============================================================
+           MODULE CARD
+           One card per module: icon, name and status on top; the description; the numbers; the
+           address to type; and the button that opens the manager. The button row sits at the bottom
+           whatever the height of the text above, so three cards in a row line up.
+           ============================================================ -->
+      <DataTemplate DataType="{x:Type local:ModuleCardVm}">
+         <Border x:Name="card"
+                 Margin="8,0"
+                 Padding="20,18"
+                 CornerRadius="16"
+                 BorderThickness="1"
+                 BorderBrush="{StaticResource outlineBrush}"
+                 Background="{StaticResource surfaceBrush}">
+            <Grid>
+               <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="*" />
+                  <RowDefinition Height="Auto" />
+               </Grid.RowDefinitions>
+
+               <!-- Header: icon plate, name, status -->
+               <Grid Grid.Row="0">
+                  <Grid.ColumnDefinitions>
+                     <ColumnDefinition Width="Auto" />
+                     <ColumnDefinition Width="*" />
+                     <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+                  <Grid Width="46" Height="46" VerticalAlignment="Center">
+                     <Border Style="{StaticResource plateFillStyle}" />
+                     <fa:FontAwesome Icon="{Binding Icon}" FontSize="19" Style="{StaticResource plateIconStyle}" />
+                  </Grid>
+                  <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
+                     <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" />
+                     <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <Ellipse x:Name="dot" Width="8" Height="8" VerticalAlignment="Center"
+                                 Fill="{StaticResource statusOffBrush}" />
+                        <TextBlock Text="{Binding StatusText}" FontSize="11" Opacity="0.85"
+                                   Margin="7,0,0,0" VerticalAlignment="Center" />
+                     </StackPanel>
+                  </StackPanel>
+                  <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top" Margin="8,-4,-8,0">
+                  <Button
+                          Command="{Binding RefreshCommand}" ToolTip="Refresh card"
+                          AutomationProperties.Name="Refresh module card">
+                     <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource iconButtonStyle}">
+                           <Setter Property="Visibility" Value="Collapsed" />
+                           <Style.Triggers>
+                              <DataTrigger Binding="{Binding HasRefresh}" Value="True">
+                                 <Setter Property="Visibility" Value="Visible" />
+                              </DataTrigger>
+                           </Style.Triggers>
+                        </Style>
+                     </Button.Style>
+                     <fa:FontAwesome Icon="Solid_ArrowsRotate" FontSize="13" />
+                  </Button>
+                  <ToggleButton Style="{StaticResource serverToggleStyle}" Margin="4,0,0,0"
+                                IsChecked="{Binding Enabled, Mode=OneWay}" Click="ServerToggle_Click"
+                                Command="{Binding ToggleCommand}" ToolTip="{Binding ToggleTooltip}"
+                                ToolTipService.ShowOnDisabled="True" AutomationProperties.Name="NuGet server enabled" />
+                  </StackPanel>
+               </Grid>
+
+               <TextBlock Grid.Row="1" Text="{Binding Description}" Style="{StaticResource mutedTextStyle}"
+                          Margin="0,14,0,0" MinHeight="48" />
+
+               <!-- Numbers: hidden until the module has reported any -->
+               <ItemsControl Grid.Row="2" ItemsSource="{Binding Stats}" Margin="0,14,0,0">
+                  <ItemsControl.Style>
+                     <Style TargetType="ItemsControl">
+                        <Style.Triggers>
+                           <DataTrigger Binding="{Binding Stats.Count}" Value="0">
+                              <Setter Property="Visibility" Value="Collapsed" />
+                           </DataTrigger>
+                        </Style.Triggers>
+                     </Style>
+                  </ItemsControl.Style>
+                  <ItemsControl.ItemsPanel>
+                     <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                     </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                     <DataTemplate DataType="{x:Type local:HomeStat}">
+                        <StackPanel Margin="0,0,24,0">
+                           <TextBlock Text="{Binding Value}" FontSize="22" FontWeight="SemiBold"
+                                      Foreground="{DynamicResource themeAccentBrush}" />
+                           <TextBlock Text="{Binding Label}" FontSize="10.5" Opacity="0.7" />
+                        </StackPanel>
+                     </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+               </ItemsControl>
+
+               <!-- Address to type, with a copy button -->
+               <StackPanel Grid.Row="3">
+               <TextBlock Text="{Binding StorageCaption}" ToolTip="{Binding StorageDescription}"
+                          Margin="0,12,0,0" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap">
+                  <TextBlock.Style>
+                     <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                           <DataTrigger Binding="{Binding StorageCaption}" Value="">
+                              <Setter Property="Visibility" Value="Collapsed" />
+                           </DataTrigger>
+                        </Style.Triggers>
+                     </Style>
+                  </TextBlock.Style>
+               </TextBlock>
+               <Border Margin="0,14,0,0" Padding="10,4,4,4" CornerRadius="9"
+                       Background="{StaticResource surfaceBrush}">
+                  <Border.Style>
+                     <Style TargetType="Border">
+                        <Style.Triggers>
+                           <DataTrigger Binding="{Binding Endpoint}" Value="">
+                              <Setter Property="Visibility" Value="Collapsed" />
+                           </DataTrigger>
+                        </Style.Triggers>
+                     </Style>
+                  </Border.Style>
+                  <Grid>
+                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                     </Grid.ColumnDefinitions>
+                     <TextBlock Text="{Binding Endpoint}" FontFamily="Consolas" FontSize="11.5"
+                                VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                ToolTip="{Binding Endpoint}" />
+                     <Button Grid.Column="1" Style="{StaticResource iconButtonStyle}"
+                             Command="{Binding CopyCommand}" ToolTip="Copy">
+                        <fa:FontAwesome Icon="Solid_Copy" FontSize="12" Opacity="0.75" />
+                     </Button>
+                  </Grid>
+               </Border>
+               </StackPanel>
+
+               <!-- Open the manager -->
+               <Button Grid.Row="5" Margin="0,16,0,0"
+                       Content="{Binding ActionText}"
+                       Command="{Binding OpenCommand}">
+                  <Button.Style>
+                     <Style TargetType="Button" BasedOn="{StaticResource primaryButtonStyle}">
+                        <Style.Triggers>
+                           <DataTrigger Binding="{Binding Status}" Value="Soon">
+                              <Setter Property="Visibility" Value="Collapsed" />
+                           </DataTrigger>
+                        </Style.Triggers>
+                     </Style>
+                  </Button.Style>
+               </Button>
+            </Grid>
+         </Border>
+         <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding Status}" Value="Ready">
+               <Setter TargetName="dot" Property="Fill" Value="{StaticResource statusReadyBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Warning">
+               <Setter TargetName="dot" Property="Fill" Value="{StaticResource statusWarningBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Loading">
+               <Setter TargetName="dot" Property="Fill" Value="{DynamicResource themeAccentBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Soon">
+               <Setter TargetName="card" Property="Opacity" Value="0.6" />
+            </DataTrigger>
+         </DataTemplate.Triggers>
+      </DataTemplate>
+
+      <Style x:Key="sectionStyle" TargetType="StackPanel">
+         <Setter Property="Margin" Value="0,26,0,0" />
+      </Style>
+
+      <!-- A section with nothing to show leaves no caption behind. Named styles, not implicit ones:
+           an implicit StackPanel style would also reach every StackPanel nested inside the section. -->
+      <Style x:Key="adminSectionStyle" TargetType="StackPanel" BasedOn="{StaticResource sectionStyle}">
+         <Style.Triggers>
+            <DataTrigger Binding="{Binding AdminTiles.Count}" Value="0">
+               <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+         </Style.Triggers>
+      </Style>
+
+      <Style x:Key="appSectionStyle" TargetType="StackPanel" BasedOn="{StaticResource sectionStyle}">
+         <Style.Triggers>
+            <DataTrigger Binding="{Binding AppTiles.Count}" Value="0">
+               <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+         </Style.Triggers>
+      </Style>
+   </UserControl.Resources>
+
+   <!-- Horizontal scrolling is off on purpose: with it on, the content is measured at its natural width
+        instead of the window's, so it overran the viewport and cut the last card off. -->
+   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <Border MaxWidth="1180" Margin="28,22,28,24" HorizontalAlignment="Stretch">
+         <StackPanel>
+
+            <!-- =========================================================
+                 HERO
+                 ========================================================= -->
+            <Grid>
+               <Border CornerRadius="20" Background="{StaticResource surfaceBrush}"
+                       BorderThickness="1" BorderBrush="{StaticResource outlineBrush}" />
+               <Border CornerRadius="20" Opacity="0.10" Background="{DynamicResource themeAccentBrush}" />
+               <fa:FontAwesome Icon="Solid_Warehouse"
+                               FontSize="150"
+                               Opacity="0.07"
+                               Foreground="{DynamicResource themeAccentBrush}"
+                               HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                               Margin="0,0,36,14"
+                               IsHitTestVisible="False" />
+
+               <Grid Margin="30,28">
+                  <Grid.ColumnDefinitions>
+                     <ColumnDefinition Width="*" />
+                     <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+
+                  <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                     <Grid Width="64" Height="64" VerticalAlignment="Top">
+                        <Border Style="{StaticResource plateFillStyle}" CornerRadius="16" Opacity="0.2" />
+                        <fa:FontAwesome Icon="Solid_Warehouse" FontSize="28" Style="{StaticResource plateIconStyle}" />
+                     </Grid>
+                     <StackPanel Margin="20,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding TitleText}" FontSize="30" FontWeight="Bold" />
+                        <TextBlock Text="{Binding TaglineText}" FontSize="14" Opacity="0.85" Margin="0,2,0,0" />
+                        <Border Margin="0,12,0,0" Padding="11,3" CornerRadius="12"
+                                HorizontalAlignment="Left" BorderThickness="1"
+                                BorderBrush="{DynamicResource themeAccentBrush}">
+                           <TextBlock Text="{Binding SloganText}" FontSize="11.5" FontWeight="SemiBold"
+                                      Foreground="{DynamicResource themeAccentBrush}" />
+                        </Border>
+                     </StackPanel>
+                  </StackPanel>
+
+                  <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="24,0,0,0">
+                     <Border Style="{StaticResource chipStyle}">
+                        <StackPanel Orientation="Horizontal">
+                           <fa:FontAwesome Icon="Solid_User" FontSize="11" Opacity="0.7" VerticalAlignment="Center" />
+                           <TextBlock Text="{Binding UserText}" FontSize="12" Margin="8,0,0,0" />
+                        </StackPanel>
+                     </Border>
+                     <Border Style="{StaticResource chipStyle}" Margin="0">
+                        <StackPanel Orientation="Horizontal">
+                           <fa:FontAwesome Icon="Solid_Server" FontSize="11" Opacity="0.7" VerticalAlignment="Center" />
+                           <TextBlock Text="{Binding ServerText}" FontSize="12" Margin="8,0,0,0" />
+                        </StackPanel>
+                     </Border>
+                  </StackPanel>
+               </Grid>
+            </Grid>
+
+            <!-- =========================================================
+                 MODULES
+                 ========================================================= -->
+            <StackPanel Style="{StaticResource sectionStyle}">
+               <TextBlock Text="MODULES" Style="{StaticResource sectionCaptionStyle}" />
+               <!-- The cards carry 8px of margin on each side; the host takes it back so the first and
+                    last card line up with the hero above. -->
+               <ItemsControl ItemsSource="{Binding Modules}" Margin="-8,0">
+                  <ItemsControl.ItemsPanel>
+                     <ItemsPanelTemplate>
+                        <UniformGrid Rows="1" />
+                     </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+               </ItemsControl>
+            </StackPanel>
+
+            <!-- =========================================================
+                 ADMINISTRATION
+                 ========================================================= -->
+            <StackPanel Style="{StaticResource adminSectionStyle}">
+               <TextBlock Text="ADMINISTRATION" Style="{StaticResource sectionCaptionStyle}" />
+               <ItemsControl ItemsSource="{Binding AdminTiles}" Style="{StaticResource tilesHostStyle}" />
+            </StackPanel>
+
+            <!-- =========================================================
+                 OTHER MODULES: menu entries registered by anything else the host loads
+                 ========================================================= -->
+            <StackPanel Style="{StaticResource appSectionStyle}">
+               <TextBlock Text="MORE" Style="{StaticResource sectionCaptionStyle}" />
+               <ItemsControl ItemsSource="{Binding AppTiles}" Style="{StaticResource tilesHostStyle}" />
+            </StackPanel>
+
+            <TextBlock Text="{Binding CopyrightText}" FontSize="10.5" Opacity="0.5"
+                       HorizontalAlignment="Center" Margin="0,34,0,0" />
+            <TextBlock Text="Built with Em System" FontSize="10.5" Opacity="0.4"
+                       HorizontalAlignment="Center" Margin="0,2,0,0" />
+         </StackPanel>
+      </Border>
+   </ScrollViewer>
+</UserControl>

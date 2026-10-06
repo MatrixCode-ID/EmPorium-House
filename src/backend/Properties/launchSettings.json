@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "EmPoriumHouse.Api Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "emporium-server": "StartDebugging"
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+name: emporium-server
+services:
+  emporium-server:
+    image: emporium-server:local
+    container_name: emporium-server
+    hostname: emporium-house-api
+    labels:
+      com.jetbrains.rider.fast.mode: "false"
+      com.microsoft.visual-studio.project-name: EmPoriumHouse.Api
+    build:
+      context: ../..
+      dockerfile: src/backend/EmPoriumHouse.Api/Dockerfile
+      args:
+        BUILD_CONFIGURATION: ${BUILD_CONFIGURATION:-Release}
+        TZ: ${TZ:-Asia/Jakarta}
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      TZ: ${TZ:-Asia/Jakarta}
+      EM_API_CONFIG: /run/secrets/emapi-config
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "${EMPORIUM_API_BIND_ADDRESS:-127.0.0.1}:${EMPORIUM_API_PORT:-5232}:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - emporium-house-api-data:/app/data
+    secrets:
+      - emapi-config
+    init: true
+volumes:
+  emporium-house-api-data:
+    name: emporium-house-api_emporium-house-api-data
+# emapi-config.json for the container, mounted read-only at /run/secrets/emapi-config.
+secrets:
+  emapi-config:
+    file: ${EM_API_CONFIG_FILE:-../../../.artefacts/EmPorium/config/emapi-config.docker.json}

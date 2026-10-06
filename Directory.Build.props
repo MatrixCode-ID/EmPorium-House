@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <!-- Version of the em-system engine packages (EmSys.*) on nuget.org. Every engine reference is a
+         PackageReference with this version; change it here to move all hosts to another engine release. -->
+    <EmSysVersion>0.1.0-alpha.2</EmSysVersion>
+    <!-- Machine-local files that never enter the repository (debug keys, private configuration), one folder per
+         repository. The default is a sibling folder (..\.artefacts\EmPorium); override it with an environment variable or `-p:ArtefactsPath=<path>`. -->
+    <ArtefactsPath Condition="'$(ArtefactsPath)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '.artefacts', 'EmPorium'))</ArtefactsPath>
+    <ArtefactsPath>$([MSBuild]::EnsureTrailingSlash('$(ArtefactsPath)'))</ArtefactsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Authors>Matrix Code</Authors>
+    <Company>Matrix Code</Company>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <PackageProjectUrl>https://github.com/MatrixCode-ID/EmPorium-House</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MatrixCode-ID/EmPorium-House</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright (c) 2026 Matrix Code</Copyright>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+   <PropertyGroup>
+      <OutputType>WinExe</OutputType>
+      <IsPackable>false</IsPackable>
+      <TargetFramework>net10.0-windows</TargetFramework>
+      <Nullable>enable</Nullable>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <UseWPF>true</UseWPF>
+      <UseWindowsForms>true</UseWindowsForms>
+      <RootNamespace>EmPoriumHouse</RootNamespace>
+      <AssemblyName>EmPoriumHouse</AssemblyName>
+      <!-- Application icon: the engine's logo (copied from em-system) until EmPorium House has its own artwork. -->
+      <ApplicationIcon>Assets\Logo.ico</ApplicationIcon>
+   </PropertyGroup>
+
+   <ItemGroup>
+      <PackageReference Include="EmSys.Libs" Version="$(EmSysVersion)"/>
+      <PackageReference Include="EmSys.Ui.Wpf.Core" Version="$(EmSysVersion)"/>
+   </ItemGroup>
+
+   <!-- Debug builds sign development tokens with a private key kept outside the repository. Without the file
+        the debug key is simply not registered. -->
+   <ItemGroup Condition="'$(Configuration)' == 'Debug' And Exists('$(ArtefactsPath)debugkey/debug-token.key')">
+      <EmbeddedResource Include="$(ArtefactsPath)debugkey/debug-token.key" LogicalName="DevelopmentToken" Visible="false"/>
+   </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="EmPoriumHouse.Api/EmPoriumHouse.Api.csproj" />
+  <Project Path="compose.dcproj" />
+  <Folder Name="/Container/">
+    <File Path="compose.yml" />
+    <File Path=".env.example" />
+    <File Path="EmPoriumHouse.Api/Dockerfile" />
+    <File Path=".run/EmPoriumHouse.Api Compose.run.xml" />
+  </Folder>
+</Solution>

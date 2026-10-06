@@ -1,0 +1,29 @@
+{
+  // Copy to ..\.artefacts\EmPorium\config\emapi-config.json beside the repository. Never commit real values.
+  "database": {
+    "provider": "MicrosoftSqlServer",
+    "connectionString": "Server=localhost,1433;Database=Em;User ID=em;Password=CHANGE_ME;Encrypt=True;TrustServerCertificate=True",
+    "extra": {}
+  },
+  "admin": {
+    "initialPassword": "CHANGE_ME"
+  },
+  // Public keys only (RSA Base64 DER PKCS#1). Leave empty on public servers.
+  "debugTokens": [],
+  "http": {
+    "requestTimeoutSeconds": 30,
+    "actionRateLimit": 300,
+    "proxy": { "trusted": [], "trustAny": false, "hopLimit": null }
+  },
+  "session": {
+    "tokenRetentionHours": 720
+  },
+  "storage": {
+    "taskCachePath": "./data/tasks",
+    "cdnPath": "./data/cdn",
+    "cdnMaxFileSizeMb": 200,
+    "registryPath": "./data/container-registry",
+    "nuPakPath": "./data/nuget",
+    "nuPakMaxPackageMb": 250
+  }
+}

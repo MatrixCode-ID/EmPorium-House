@@ -1,0 +1,19 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="EmPoriumHouse.Api Compose" type="docker-deploy" factoryName="docker-compose.yml" activateToolWindowBeforeRun="true">
+    <deployment type="docker-compose.yml">
+      <settings>
+        <option name="composeProjectName" value="emporium-server" />
+        <option name="sourceFilePath" value="$PROJECT_DIR$/compose.yml" />
+        <option name="services">
+          <list>
+            <option value="emporium-server" />
+          </list>
+        </option>
+        <option name="forceBuild" value="true" />
+        <option name="upDetach" value="false" />
+      </settings>
+    </deployment>
+    <EXTENSION ID="com.jetbrains.rider.docker.debug" isFastModeEnabled="false" isSslEnabled="false" />
+    <method v="2" />
+  </configuration>
+</component>
