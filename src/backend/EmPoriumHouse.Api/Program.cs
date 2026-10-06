@@ -5,8 +5,8 @@ using Em.Api.Core;
    repository and fill in the database and initial admin password. The build copies it to the output; it is
    never published. EM_* environment variables override the file (see Helper.cs).
 
-   Database prerequisites: the em-system core and registry scripts (doc/sqlscript/mssql/sets/Ctn.sql) and
-   the em-system NuPak script (doc/sqlscript/mssql/sets/NuPak.sql).
+   Database prerequisites: the em-system scripts in doc/sqlscript/mssql: tables/010-core.sql, the registry
+   (tables/030-registry.sql) and NuPak (tables/040-nupak.sql), then views/.
  */
 
 var app = EmApp.BuildApp(args, builder => {

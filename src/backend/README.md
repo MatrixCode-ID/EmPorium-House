@@ -15,7 +15,7 @@ and diagnostic tools (`ping`, `traceroute`, `nano`) and runs as UID 1654.
   em-system checkout is needed.
 - An external database that already contains the engine core/registry schema
   and the NuPak version 2 schema. For an existing NuPak database, see
-  [the engine upgrade runbook](../../../em-system/doc/engine-nupak-multifeed-upgrade.md). Compose does not
+  [the engine upgrade runbook](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-nupak-multifeed-upgrade.md). Compose does not
   run a database.
 
 ## Configuration
@@ -132,7 +132,7 @@ removes the local `.2` tag and rebuilds `.2` from the current source. It also
 removes the matching local GHCR-qualified tag, if present. Other version tags
 are kept. Removal uses no force and does not delete containers; if Docker
 refuses removal, the script stops.
-See [the engine naming convention](../../../em-system/doc/konvensi-penamaan-container.md).
+See [the engine naming convention](https://github.com/MatrixCode-ID/em-system/blob/main/doc/konvensi/konvensi-penamaan-container.md).
 
 The script builds Release into local Docker as `emporium-server:<version-tag>`,
 sets the assembly and image version, and verifies the image exists. Only then
@@ -187,4 +187,4 @@ in `..\.artefacts\EmPorium\config\` (see `emapi-config.example.json`).
   and a strong initial admin password. List the reverse proxy in
   `http.proxy.trusted` so client addresses are logged correctly.
 
-NuGet prerequisites: run em-system `doc/sqlscript/mssql/sets/NuPak.sql` (schema version 2). See em-system `doc/engine-nupak.md`. Engine host uses managed settings; EmPorium House uses `AddNuPak(config.Storage.NuPakPath, config.Storage.NuPakMaxPackageMb)`.
+NuGet prerequisites: run em-system `doc/sqlscript/mssql/tables/040-nupak.sql` and the `views/vi_NuPak*.sql` scripts (schema version 2). See [NuGet server (NuPak)](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-nupak.md). Engine host uses managed settings; EmPorium House uses `AddNuPak(config.Storage.NuPakPath, config.Storage.NuPakMaxPackageMb)`.
