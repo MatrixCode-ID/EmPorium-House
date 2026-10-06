@@ -132,7 +132,7 @@ removes the local `.2` tag and rebuilds `.2` from the current source. It also
 removes the matching local GHCR-qualified tag, if present. Other version tags
 are kept. Removal uses no force and does not delete containers; if Docker
 refuses removal, the script stops.
-See [the engine naming convention](https://github.com/MatrixCode-ID/em-system/blob/main/doc/konvensi/konvensi-penamaan-container.md).
+See [the engine naming convention](https://github.com/MatrixCode-ID/em-system/blob/main/doc/convention/container-naming.md).
 
 The script builds Release into local Docker as `emporium-server:<version-tag>`,
 sets the assembly and image version, and verifies the image exists. Only then

@@ -88,7 +88,7 @@ secrets:
     file: ./emapi-config.docker.json
 ```
 
-Tag `alpha` adalah tag channel yang bergerak; untuk deployment yang dapat diulang, pakai tag versi penuh (lihat [konvensi penamaan container](https://github.com/MatrixCode-ID/em-system/blob/main/doc/konvensi/konvensi-penamaan-container.md)). Jika package GHCR privat, jalankan `docker login ghcr.io` lebih dulu.
+Tag `alpha` adalah tag channel yang bergerak; untuk deployment yang dapat diulang, pakai tag versi penuh (lihat [konvensi penamaan container](https://github.com/MatrixCode-ID/em-system/blob/main/doc/convention/container-naming.md)). Jika package GHCR privat, jalankan `docker login ghcr.io` lebih dulu.
 
 ### Compose dari source
 

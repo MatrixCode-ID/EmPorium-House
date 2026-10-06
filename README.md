@@ -207,14 +207,16 @@ Two things to know:
 
 ## Engine documentation
 
-The features are documented in em-system:
+The features are documented in em-system ([all engine guides](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/README.md)):
 
-- [CDN storage](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-cdn-storage.md)
+- [CDN](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-cdn-storage.md)
 - [Container registry](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-registry.md)
 - [NuGet server (NuPak)](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-nupak.md)
 - [Storage settings](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-storage-settings.md)
-- [Robots](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-robots.md)
-- [WPF publisher](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-publish.md)
-- [Login and branding](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-login-branding.md)
+- [Robot identities](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-robots.md)
+- [Module protocol endpoints](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-public-endpoints.md)
+- [Publish from WPF](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-publish.md)
+- [Release Manager](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-release-manager.md)
+- [Login branding](https://github.com/MatrixCode-ID/em-system/blob/main/doc/engine/engine-login-branding.md)
 
 What is planned next is in the [roadmap](doc/roadmap.md).
