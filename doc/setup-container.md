@@ -9,7 +9,7 @@ Kecuali disebutkan lain, semua perintah dijalankan lewat PowerShell dari **root 
 - Docker dalam mode Linux containers dengan BuildKit. Compose memakai plugin v2.24 atau lebih baru (`docker compose version`).
 - Akses internet saat build untuk image Alpine, paket apk, dan paket NuGet.
 - Database yang dapat dijangkau dari container. Compose hanya menjalankan API, tidak menyediakan server database.
-- Skema sudah terpasang di database tersebut: skema inti, registry (`030-registry.sql`), dan NuPak versi 2 (`040-nupak.sql` beserta view `vi_NuPak*`). Skrip SQL Server berada di repo em-system, `doc/sqlscript/mssql/` (jalankan `sets/`, lalu `tables/` urut nomor, lalu `views/`). Untuk database NuPak yang sudah ada, ikuti runbook upgrade engine NuPak multifeed di em-system.
+- Skema sudah terpasang di database tersebut. Skrip SQL Server milik engine ada di repo em-system, folder [`doc/sqlscript/mssql`](https://github.com/MatrixCode-ID/em-system/tree/main/doc/sqlscript/mssql); daftar skrip, urutan, dan contoh `sqlcmd` ada di [README, bagian "Prepare the database"](../README.md#prepare-the-database). Singkatnya: `sets/000-ulid.sql`, `tables/010-core.sql`, `030-registry.sql`, `040-nupak.sql`, lalu view `vi_Address`, `vi_Comm`, `vi_Contact`, `vi_Role`, `vi_User`, `vi_UserCredential` dan lima `vi_NuPak*`. Untuk database NuPak yang sudah ada, ikuti runbook upgrade engine NuPak multifeed di em-system.
 
 ## Konfigurasi
 

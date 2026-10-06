@@ -66,7 +66,41 @@ Each host has its own solution: `src/backend/EmPoriumHouse.Api.slnx` and `src/fr
 
 - .NET SDK 10 (the WPF client needs Windows).
 - Access to nuget.org for the engine packages (`EmSys.Api.Core`, `EmSys.Libs`, `EmSys.Ui.Wpf.Core`). Their version is the `EmSysVersion` property in [`Directory.Build.props`](Directory.Build.props); no em-system checkout is needed.
-- A SQL Server database prepared with the em-system scripts in `doc/sqlscript/mssql`: `sets/` first, then `tables/` in numeric order (core `010-core.sql`, container registry `030-registry.sql`, NuGet server `040-nupak.sql`), then `views/`. EmPorium House can share the same database as an em-system server, so both see the same users and credentials.
+- A SQL Server database with the em-system schema. The scripts live in em-system ([`doc/sqlscript/mssql`](https://github.com/MatrixCode-ID/em-system/tree/main/doc/sqlscript/mssql)); see [Prepare the database](#prepare-the-database). EmPorium House can share the same database as an em-system server, so both see the same users and credentials.
+
+## Prepare the database
+
+The server stores its data in SQL Server, and the schema is provided by the engine, not by this repository. Run the scripts from [`doc/sqlscript/mssql`](https://github.com/MatrixCode-ID/em-system/tree/main/doc/sqlscript/mssql) of em-system against an **empty** database, in this order:
+
+| Order | Folder | Script |
+| --- | --- | --- |
+| 1 | `sets/` | `000-ulid.sql` (ULID functions used by the column defaults) |
+| 2 | `tables/` | `010-core.sql` (users, roles, sessions, robots, logs, ...) |
+| 3 | `tables/` | `030-registry.sql` (container registry) |
+| 4 | `tables/` | `040-nupak.sql` (NuGet server) |
+| 5 | `views/` | `vi_Address`, `vi_Comm`, `vi_Contact`, `vi_Role`, `vi_User`, `vi_UserCredential`, `vi_NuPakAudit`, `vi_NuPakFeed`, `vi_NuPakPackage`, `vi_NuPakPrefix`, `vi_NuPakVersion` (`.sql`) |
+
+The other scripts in that folder (`020-approval.sql`, `100-business.sql`, `900-emtest.sql`, `vi_TestDoc.sql`, `vi_TestItem.sql`) belong to engine features EmPorium House does not use. The `updates/` folder only holds migrations for databases created with older scripts.
+
+With `sqlcmd` (PowerShell; use `-U <login> -P <password>` instead of `-E` for SQL authentication):
+
+```powershell
+git clone --depth 1 https://github.com/MatrixCode-ID/em-system.git
+Set-Location em-system\doc\sqlscript\mssql
+
+$server = 'localhost'; $db = 'EmPorium'
+sqlcmd -S $server -E -Q "CREATE DATABASE [$db]"
+
+$views = 'vi_Address','vi_Comm','vi_Contact','vi_Role','vi_User','vi_UserCredential',
+         'vi_NuPakAudit','vi_NuPakFeed','vi_NuPakPackage','vi_NuPakPrefix','vi_NuPakVersion' | ForEach-Object { "views\$_.sql" }
+$scripts = @('sets\000-ulid.sql', 'tables\010-core.sql', 'tables\030-registry.sql', 'tables\040-nupak.sql') + $views
+foreach ($script in $scripts) {
+    sqlcmd -S $server -d $db -E -b -I -i $script
+    if ($LASTEXITCODE -ne 0) { throw "Failed: $script" }
+}
+```
+
+`-b` stops on the first error and `-I` enables quoted identifiers, which the scripts expect. Each view script ends with a test `SELECT`, so `sqlcmd` prints empty result tables; that output is expected. Then put the database in `database.connectionString` of your [config file](src/backend/EmPoriumHouse.Api/emapi-config.example.json); a server running in a container needs SQL authentication (see [Run with Docker](#run-with-docker)). Use a dedicated SQL login for the application rather than `sa`.
 
 ## Build and run
 
