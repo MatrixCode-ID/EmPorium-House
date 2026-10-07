@@ -1,0 +1,5 @@
+{
+  "image": "ghcr.io/matrixcode-id/emporium-server",
+  "automaticTargetVersion": "0.1.0",
+  "automaticChannel": "alpha"
+}

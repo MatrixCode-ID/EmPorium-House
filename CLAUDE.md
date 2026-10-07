@@ -131,3 +131,33 @@ Pembaruan 2026-10-03 (timezone container): Dockerfile menerima build argument `T
 - Repo ini publik. Kebutuhan lokal (key debug, konfigurasi produksi, backup) disimpan di `$(ArtefactsPath)`, bawaan `..\.artefacts\EmPorium\`, per subfolder. Key debug WPF: `debugkey\debug-token.key` (private, disisipkan hanya pada build Debug bila file ada) dan `debugkey\debug-token.pub` (public, untuk `EM_DEBUG_TOKEN` server). Jangan commit path absolut mesin, username, IP internal, atau kredensial.
 
 Pembaruan 2026-10-04 (migrasi NuPak): NuPak kini di engine Em.Api.Core/Em.Libs/Em.Ui.Wpf.Core. API memakai AddNuPak() bersama AddManagedStorageSettings() atau AddNuPak(path, maxPackageMb). Navigasi admin.nupak otomatis dari core. Catatan modul produk lama bersifat historis. Panduan dan SQL berada di em-system: doc/engine/engine-nupak.md dan doc/sqlscript/mssql/tables/040-nupak.sql.
+
+Pembaruan 2026-10-07 (workspace dan workflow produk, keputusan pengguna): pekerjaan
+harian memakai `work-bench` pada repo privat `MatrixCode-ID/EmPorium-House-work`
+(remote `private`); repo publik `MatrixCode-ID/EmPorium-House` (remote `origin`)
+memakai `main` dan opsional `ci-sandbox`. Folder lokal tetap `EmPorium`. Jangan push
+`work-bench` ke `origin`. Clone pertama dari repo privat, lalu jalankan
+`scripts/setup-workspace.cmd` untuk mengatur remote, tracking/push destination,
+dan memilih `work-bench` bila checkout bersih. Publikasi kode melalui merge
+`work-bench` ke `main`, lalu push `main` ke `origin`. Update engine otomatis masuk
+ke `main`; `work-bench` mengambilnya lewat fetch origin dan merge origin/main.
+Pertahankan pekerjaan pengguna; jangan reset atau force push untuk sinkronisasi.
+
+Workflow produk: `ci.yml` membangun backend/WPF/container; `release.yml` hanya
+memublikasikan dari repo publik, ketika ada release note versi produk baru di
+`doc/ReleaseNote/<versi>.md` (bahasa Inggris, wajib `## Summary`, satu versi per
+merge). Dispatch `emsys_version` memperbarui `EmSysVersion` pada `main`, membuat
+release note produk otomatis, lalu membangun ZIP/image dari commit yang sama.
+Versi produk independen dari engine: alpha.4 menjadi alpha.5 walaupun versi engine
+berbeda. Channel/target otomatis di `scripts/release-product/settings.json`
+(saat ini alpha dan 0.1.0); pindah beta dengan mengubah channel dan menambahkan
+release note beta.1. Tag versi tetap tidak ditimpa; `latest` hanya channel release.
+Release note yang sudah terbit tidak diubah. Workflow dari em-system dan token
+lintas repo adalah pekerjaan terpisah; persiapan ini tidak merilis produk baru.
+Panduan: `doc/development-workspace.md`, `doc/ReleaseNote/README.md`.
+
+Struktur skrip baru mengikuti em-system: root `scripts/` berisi wrapper `.cmd`,
+implementasi PowerShell/resource di subfolder bernama sama; wrapper memakai
+PowerShell 7, cek PATH, CRLF, dan selalu pause. Komentar kode serta pesan skrip/
+workflow baru berbahasa Inggris. Harness sementara disimpan di luar repo pada
+`../.artefacts/EmPorium/scripts/`, bukan menambah harness sekali pakai ke repo.

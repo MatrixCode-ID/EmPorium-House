@@ -62,6 +62,8 @@ Each feature is one registration line, so you can switch any of them off by remo
 
 Each host has its own solution: `src/backend/EmPoriumHouse.Api.slnx` and `src/frontend/EmPoriumHouse.Ui.Wpf.slnx`. The engine comes from the `EmSys.*` packages on nuget.org, not from projects in the solutions.
 
+Maintainers: [development workspace, first-clone setup, CI and product releases](doc/development-workspace.md).
+
 ## Requirements
 
 - .NET SDK 10 (the WPF client needs Windows).

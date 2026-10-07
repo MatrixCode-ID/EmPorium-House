@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main, ci-sandbox, work-bench]
+    paths:
+      - 'src/**'
+      - 'Directory.Build.props'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/release.yml'
+      - 'scripts/release-product/**'
+  pull_request:
+    branches: [main, work-bench]
+    paths:
+      - 'src/**'
+      - 'Directory.Build.props'
+      - '.github/workflows/**'
+      - 'scripts/release-product/**'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-release-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check PowerShell syntax and release rules
+        shell: pwsh
+        run: |
+          foreach ($file in Get-ChildItem scripts/setup-workspace,scripts/release-product -Filter *.ps1 -Recurse) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count) { throw ($errors -join "`n") }
+          }
+          ./scripts/release-product/tests.ps1 -FixtureDirectory (Join-Path $env:RUNNER_TEMP 'release-rules')
+
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build API
+        run: dotnet build src/backend/EmPoriumHouse.Api.slnx --configuration Release
+
+  build-wpf:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build desktop client
+        run: dotnet build src/frontend/EmPoriumHouse.Ui.Wpf.slnx --configuration Release
+
+  build-container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build API container without publishing
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/backend/EmPoriumHouse.Api/Dockerfile
+          push: false
+          build-args: |
+            BUILD_CONFIGURATION=Release
+            TZ=Asia/Jakarta

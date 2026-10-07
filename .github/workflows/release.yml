@@ -1,0 +1,164 @@
+name: Release EmPorium House
+
+# Ordinary source changes run CI. New release notes opt main into a product release.
+# Only the public repository can update main or publish ZIPs and GHCR images.
+on:
+  push:
+    branches: [main]
+    paths: ['doc/ReleaseNote/**']
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      emsys_version:
+        description: 'New EmSys NuGet version; automatically creates the next product release note'
+        required: false
+        type: string
+      release_version:
+        description: 'Existing product release note version; empty selects the single unpublished note'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: emporium-product-release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.repository == 'MatrixCode-ID/EmPorium-House'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.prepare.outputs.version }}
+      sha: ${{ steps.prepare.outputs.sha }}
+      engine: ${{ steps.prepare.outputs.engine }}
+      image: ${{ steps.prepare.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Resolve product version and record an engine update
+        id: prepare
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ENGINE_VERSION: ${{ inputs.emsys_version }}
+          PRODUCT_VERSION: ${{ inputs.release_version }}
+        run: >-
+          ./scripts/release-product/release-product.ps1
+          -Mode Prepare
+          -EngineVersion $env:ENGINE_VERSION
+          -Version $env:PRODUCT_VERSION
+
+  build-wpf:
+    needs: prepare
+    if: needs.prepare.outputs.version != ''
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Publish the desktop ZIP
+        shell: pwsh
+        env:
+          PRODUCT_VERSION: ${{ needs.prepare.outputs.version }}
+        run: >-
+          ./scripts/release-product/release-product.ps1
+          -Mode BuildWpf
+          -Version $env:PRODUCT_VERSION
+          -OutputDirectory (Join-Path $env:RUNNER_TEMP 'emporium-wpf')
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ needs.prepare.outputs.version }}
+          path: ${{ runner.temp }}/emporium-wpf/EmPorium-House.${{ needs.prepare.outputs.version }}.zip
+          if-no-files-found: error
+          retention-days: 7
+
+  build-api:
+    needs: prepare
+    if: needs.prepare.outputs.version != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the API image for the same product commit
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/backend/EmPoriumHouse.Api/Dockerfile
+          platforms: linux/amd64
+          push: false
+          provenance: false
+          tags: ${{ needs.prepare.outputs.image }}:${{ needs.prepare.outputs.version }}
+          outputs: type=docker,dest=${{ runner.temp }}/emporium-image.tar
+          build-args: |
+            BUILD_CONFIGURATION=Release
+            APP_VERSION=${{ needs.prepare.outputs.version }}
+            TZ=Asia/Jakarta
+          labels: |
+            org.opencontainers.image.source=https://github.com/MatrixCode-ID/EmPorium-House
+            org.opencontainers.image.revision=${{ needs.prepare.outputs.sha }}
+            org.opencontainers.image.version=${{ needs.prepare.outputs.version }}
+            io.matrixcode.emsys.version=${{ needs.prepare.outputs.engine }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: api-${{ needs.prepare.outputs.version }}
+          path: ${{ runner.temp }}/emporium-image.tar
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  publish:
+    needs: [prepare, build-wpf, build-api]
+    if: needs.prepare.outputs.version != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: desktop-${{ needs.prepare.outputs.version }}
+          path: ${{ runner.temp }}/desktop
+      - uses: actions/download-artifact@v4
+        with:
+          name: api-${{ needs.prepare.outputs.version }}
+          path: ${{ runner.temp }}/api
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Publish the image and desktop release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRODUCT_VERSION: ${{ needs.prepare.outputs.version }}
+          ENGINE_VERSION: ${{ needs.prepare.outputs.engine }}
+          PRODUCT_COMMIT: ${{ needs.prepare.outputs.sha }}
+        run: >-
+          ./scripts/release-product/release-product.ps1
+          -Mode Publish
+          -Version $env:PRODUCT_VERSION
+          -EngineVersion $env:ENGINE_VERSION
+          -Commit $env:PRODUCT_COMMIT
+          -ImageArchive (Join-Path $env:RUNNER_TEMP 'api/emporium-image.tar')
+          -ZipPath (Join-Path $env:RUNNER_TEMP "desktop/EmPorium-House.$env:PRODUCT_VERSION.zip")
