@@ -2,7 +2,7 @@
 
 - Tanggal: 2026-10-07
 - Status: jadi plan
-- Plan turunan: [workspace dan workflow](../../plan/unexecuted/workspace-ci-release.codex.md).
+- Plan turunan: [workspace dan workflow](../../plan/executed/workspace-ci-release.codex.md).
 
 ## Latar belakang
 
