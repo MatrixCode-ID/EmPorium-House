@@ -35,7 +35,7 @@ Hasil nyata:
 - Harness WPF lulus pada tema terang/gelap: Home, semua tab manager, off/busy/error,
   tanpa hak Settings, duplicate refresh guard, nol feed, detail disembunyikan
   sebelum metadata, respons A lambat tidak menimpa pilihan B. PNG tersedia di
-  `scripts/module-card-qa/bin/Debug/net10.0-windows/`. Render ready/zero/loading
+  `../.artefacts/EmPorium/scripts/module-card-qa-render/bin/Debug/net10.0-windows/`. Render ready/zero/loading
   juga diperiksa secara visual. Panel operasi feed dinonaktifkan saat nol feed.
 - Host API nyata startup lulus, termasuk 12 kombinasi method/jalur legacy dan
   unknown feed yang semuanya 404. Harness menghentikan hanya proses yang dibuatnya.
@@ -116,9 +116,9 @@ Perintah verifikasi ulang:
 ```powershell
 dotnet build src/backend/EmPoriumHouse.Api.slnx
 dotnet build src/frontend/EmPoriumHouse.Ui.Wpf.slnx
-dotnet run --project scripts/nuget-smoke -- <EmPorium>
-dotnet run --project scripts/module-card-qa
-pwsh -File scripts/nuget-host-smoke.ps1
+dotnet run --project ../.artefacts/EmPorium/scripts/nuget-smoke -- <EmPorium>
+dotnet run --project ../.artefacts/EmPorium/scripts/module-card-qa-render
+pwsh -File ../.artefacts/EmPorium/scripts/nuget-host-smoke/nuget-host-smoke.ps1
 ```
 
 Harness membaca konfigurasi lokal atau environment connection string tanpa

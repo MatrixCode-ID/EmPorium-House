@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param([string]$FixtureDirectory)
 $ErrorActionPreference = 'Stop'
-. (Join-Path $PSScriptRoot 'release-common.ps1')
+. (Join-Path $PSScriptRoot '..' '..' 'scripts' 'release-product' 'release-common.ps1')
 if (-not $FixtureDirectory) {
     $FixtureDirectory = Join-Path $PSScriptRoot '..' '..' '..' '.artefacts' 'EmPorium' 'scripts' 'release-rules-tests' ([guid]::NewGuid().ToString('N'))
 }

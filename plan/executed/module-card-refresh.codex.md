@@ -19,7 +19,7 @@
   EmPoriumHouse.Ui.Wpf (PID 13944). Aplikasi tidak dihentikan. Ini file lock, bukan blokir policy.
 - Build terisolasi lulus 0 warning/error:
   `dotnet build src/frontend/EmPoriumHouse.Ui.Wpf.slnx --artifacts-path <temp>/emporium-card-build -v minimal`.
-- QA offline `dotnet run --project scripts/module-card-qa --artifacts-path <temp>/emporium-card-qa-build`
+- QA offline `dotnet run --project ../.artefacts/EmPorium/scripts/module-card-qa-render --artifacts-path <temp>/emporium-card-qa-build`
   lulus pada kedua tema: dua tombol terlihat, disabled/loading bertema, refresh registry/CDN independen,
   request ganda dicegah, angka/storage diperbarui, retry setelah kegagalan registry. QA dibangun ulang
   setelah penanganan kegagalan storage dipisahkan dari kegagalan modul.

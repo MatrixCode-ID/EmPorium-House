@@ -126,7 +126,7 @@ Audit: setiap Push/Recycle/Restore/Purge/EmptyBin/Enable/Disable/AnonymousRead/P
   - Card NuGet (`Home/EmPoriumHomeControl.xaml[.cs]`, `HomeModels.cs`) tidak lagi "Coming soon": status (Ready / Off = server tidak memasang modul atau modul nonaktif / Warning = tanpa hak atau server tidak menjawab), angka ringkas Prefixes, Packages, Versions, alamat service index (bisa disalin), total storage dengan keterangan (versi di recycle bin ikut dihitung; kegagalan membaca storage = "unavailable" tanpa menggagalkan sisa card), tombol **Open NuGet Manager**.
   - **Tombol toggle** di card: aktif/nonaktif langsung berlaku (memanggil `PostGetMeta_NuPakSetEnabled`), memperbarui status dan teks card setelah berhasil; disable mencegah request ganda, menampilkan loading bertema, dan konfirmasi saat menonaktifkan. Hanya aktif untuk pemegang `NuGet Settings Manage`; tanpa hak, tombol tampil nonaktif (bukan hilang) dengan tooltip. Kegagalan menampilkan pesan dan mengembalikan keadaan toggle ke nilai server.
   - **Tombol refresh** kecil pojok kanan atas card NuGet seperti card registry/CDN: memuat ulang seluruh informasi card itu secara independen, guard request ganda, retry setelah gagal.
-  - Perbarui `scripts/module-card-qa` (harness render) agar mencakup card NuGet: ready, busy, disabled/off, tanpa hak, tema terang dan gelap.
+  - Perbarui `../.artefacts/EmPorium/scripts/module-card-qa-render` (harness render) agar mencakup card NuGet: ready, busy, disabled/off, tanpa hak, tema terang dan gelap.
 - Dokumentasi: `doc/nuget-server.md` (cara menyalakan modul di `Program.cs`, menjalankan `NuPak.sql`, membuat prefix, memberi hak robot di User Manager, contoh `nuget.config` dengan `packageSourceMapping` dan `allowInsecureConnections`, `dotnet nuget push/delete`, semantik recycle bin, batas yang diketahui); jangan menyebut nama objek database di teks yang ditujukan untuk pengguna akhir. Perbarui `README.md` (bahasa Inggris, satu-dua baris fitur NuGet) dan `CLAUDE.md` repo ini (bagian pembaruan baru, isi lama dipertahankan). Perbarui deskripsi fitur hanya yang sudah jadi.
 
 ## Tahap 8 — Integrasi, pengujian, review, commit (dikerjakan sekali, setelah semua kode selesai)
@@ -160,13 +160,13 @@ Uji klien NuGet nyata terhadap server yang berjalan dengan token robot asli, uji
 | Build backend EmPorium House | 0 warning, 0 error |
 | Build WPF EmPorium House | 0 warning, 0 error |
 | Build backend dan WPF em-system | Keduanya 0 warning, 0 error |
-| `scripts/nuget-smoke` | **79 pemeriksaan lulus** pada database SQL terisolasi dan server loopback sementara |
+| `../.artefacts/EmPorium/scripts/nuget-smoke` | **79 pemeriksaan lulus** pada database SQL terisolasi dan server loopback sementara |
 | Klien `dotnet` | Push paket `Em.Libs.0.1.0-pre-alpha.1.nupkg`, search, restore privat dengan Basic + source mapping + cache baru, dan delete lulus |
 | Protokol | 400/401/403/404/409/413, audit gagal/ditolak, PathBase `/house`, HEAD, Range 206, nuspec, registration index/leaf dan gzip negotiation lulus |
 | Konsistensi | Race push satu pemenang; gagal SQL setelah file move membersihkan file; gagal purge mengembalikan file/baris; empty-bin dengan file terkunci mempertahankan metadata dan melaporkan kegagalan |
 | Layanan/hak | Prefix terpanjang, kepemilikan tetap setelah prefix baru, rename/delete diblokir bila berisi paket, restore/recycle, storage >4 GB, toggle cache, provider R/W, rollback/commit cleanup robot dan audit yang tetap terbaca lulus |
 | WPF offline | Harness STA membuat **28 PNG**: Home dan seluruh tab Manager; light/dark, busy/off/error, tanpa hak, retry, duplikat request, transisi request cepat, toggle Home, serta panel berisi data. PNG utama dan tab diperiksa secara visual; tidak ada panel/list memutih saat disabled |
-| Host asli | `scripts/nuget-host-smoke.ps1` menyalakan satu proses milik harness dan memverifikasi `/nuget/v3/index.json` = 404 saat off, lalu menghentikan prosesnya sendiri |
+| Host asli | `../.artefacts/EmPorium/scripts/nuget-host-smoke/nuget-host-smoke.ps1` menyalakan satu proses milik harness dan memverifikasi `/nuget/v3/index.json` = 404 saat off, lalu menghentikan prosesnya sendiri |
 | Skrip manual | Sintaks PowerShell diverifikasi; skrip dengan akun robot permanen belum dijalankan |
 
 Perintah reproduksi (PowerShell, direktori kerja `<EmPorium>`):
@@ -174,15 +174,15 @@ Perintah reproduksi (PowerShell, direktori kerja `<EmPorium>`):
 ```powershell
 dotnet build src/backend/EmPoriumHouse.Api.slnx
 dotnet build src/frontend/EmPoriumHouse.Ui.Wpf.slnx
-dotnet run --project scripts/nuget-smoke -- <EmPorium>
-dotnet run --project scripts/module-card-qa
-pwsh -NoProfile -File scripts/nuget-host-smoke.ps1
+dotnet run --project ../.artefacts/EmPorium/scripts/nuget-smoke -- <EmPorium>
+dotnet run --project ../.artefacts/EmPorium/scripts/module-card-qa-render
+pwsh -NoProfile -File ../.artefacts/EmPorium/scripts/nuget-host-smoke/nuget-host-smoke.ps1
 ```
 
 Harness SQL memerlukan hak CREATE/DROP DATABASE. Database `EmNuPakSmoke_<guid>` dihapus setelah uji; file fixture berada di direktori temp milik harness dan dibersihkan. Connection string dibaca dari konfigurasi lokal/environment tanpa dicetak. Tidak ada push/delete ke feed publik. Perintah instalasi skema (sudah dilakukan pada mesin ini; hanya diperlukan untuk database lain):
 
 ```powershell
-dotnet run --project scripts/nuget-smoke -- <EmPorium> --install-schema
+dotnet run --project ../.artefacts/EmPorium/scripts/nuget-smoke -- <EmPorium> --install-schema
 ```
 
 ### Penyimpangan dan temuan review

@@ -9,6 +9,7 @@ on:
       - '.github/workflows/ci.yml'
       - '.github/workflows/release.yml'
       - 'scripts/release-product/**'
+      - 'tests/**'
   pull_request:
     branches: [main, work-bench]
     paths:
@@ -16,6 +17,7 @@ on:
       - 'Directory.Build.props'
       - '.github/workflows/**'
       - 'scripts/release-product/**'
+      - 'tests/**'
   workflow_dispatch: {}
 
 permissions:
@@ -33,13 +35,13 @@ jobs:
       - name: Check PowerShell syntax and release rules
         shell: pwsh
         run: |
-          foreach ($file in Get-ChildItem scripts/setup-workspace,scripts/release-product -Filter *.ps1 -Recurse) {
+          foreach ($file in Get-ChildItem scripts/setup-workspace,scripts/release-product,tests/workflows -Filter *.ps1 -Recurse) {
             $tokens = $null
             $errors = $null
             [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$errors) | Out-Null
             if ($errors.Count) { throw ($errors -join "`n") }
           }
-          ./scripts/release-product/tests.ps1 -FixtureDirectory (Join-Path $env:RUNNER_TEMP 'release-rules')
+          ./tests/workflows/release-rules.ps1 -FixtureDirectory (Join-Path $env:RUNNER_TEMP 'release-rules')
 
   build-backend:
     runs-on: ubuntu-latest

@@ -161,3 +161,20 @@ implementasi PowerShell/resource di subfolder bernama sama; wrapper memakai
 PowerShell 7, cek PATH, CRLF, dan selalu pause. Komentar kode serta pesan skrip/
 workflow baru berbahasa Inggris. Harness sementara disimpan di luar repo pada
 `../.artefacts/EmPorium/scripts/`, bukan menambah harness sekali pakai ke repo.
+
+Pembaruan 2026-10-07 (penegasan aturan lokasi uji, keputusan pengguna; berlaku
+untuk Codex dan Claude Code, juga repo turunan): `scripts/` hanya berisi skrip
+yang digunakan pengguna beserta resource pendukungnya. Smoke test, harness
+render, fixture, log, dan hasil sementara wajib di artefak pada root drive yang
+sama, di luar repo: `../.artefacts/<nama-repo>/scripts/<nama>-smoke/` atau
+`<nama>-render/`. Semua referensi repo, perintah, dan laporan memakai path
+relatif; jangan menyimpan path absolut mesin. Test yang dirawat dan dijalankan
+CI ditempatkan di `tests/`, bukan `scripts/`.
+
+Harness lama `scripts/module-card-qa` kini di
+`../.artefacts/EmPorium/scripts/module-card-qa-render/`; smoke host di
+`../.artefacts/EmPorium/scripts/nuget-host-smoke/`; fixture login GHCR di
+`../.artefacts/EmPorium/scripts/ghcr-login-smoke/`. Sisa keluaran `nuget-smoke`
+juga dipindahkan ke artefak. Pemeriksaan aturan rilis CI kini di
+`tests/workflows/release-rules.ps1`. Path lama pada catatan historis di atas
+merujuk lokasi sebelum pemindahan ini.

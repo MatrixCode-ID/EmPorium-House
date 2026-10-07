@@ -46,7 +46,7 @@ Permintaan saat penyusunan hanya membuat plan ini. Jangan menganggap penyusunan 
 - `NuPakStore`: path `{root}/packages/{id}/{version}/...`, gate mutasi tunggal, recovery purge berdasarkan id+versi saja.
 - `NuPakRobotAccessManager`: resource robot ditampilkan sebagai nama prefix saja.
 - `INuPakServices`, DTO, NuGet Manager, dan Home: status/filter statistik masih satu feed.
-- Harness yang dipakai ulang: `scripts/nuget-smoke`, `scripts/nuget-host-smoke.ps1`, `scripts/module-card-qa`.
+- Harness yang dipakai ulang: `../.artefacts/EmPorium/scripts/nuget-smoke`, `../.artefacts/EmPorium/scripts/nuget-host-smoke/nuget-host-smoke.ps1`, `../.artefacts/EmPorium/scripts/module-card-qa-render`.
 
 ## Tahap 1 — Skema dan migrasi
 

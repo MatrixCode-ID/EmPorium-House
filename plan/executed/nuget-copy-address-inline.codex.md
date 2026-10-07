@@ -6,4 +6,4 @@ Permintaan: letakkan tombol copy langsung di sebelah kanan URL pada card NuGet S
 
 Tombol teks Copy address diganti ikon copy 28x28 tepat di kanan URL, jarak 6 px, tooltip dan nama aksesibilitas Copy address. Grid rata kiri mengikuti panjang URL dan mempertahankan wrapping. Handler CopyAddress tetap menyalin endpoint.Text penuh.
 
-Verifikasi: `dotnet run --project scripts/module-card-qa -c Release` lulus pada tema terang/gelap termasuk ready/busy/off/error; sekaligus membangun host WPF dan modul terbaru. Render gelap manager-ready ditinjau: ikon langsung di kanan URL. `git diff --check` lulus. Klik clipboard dan render window live belum diuji pada perubahan layout ini.
+Verifikasi: `dotnet run --project ../.artefacts/EmPorium/scripts/module-card-qa-render -c Release` lulus pada tema terang/gelap termasuk ready/busy/off/error; sekaligus membangun host WPF dan modul terbaru. Render gelap manager-ready ditinjau: ikon langsung di kanan URL. `git diff --check` lulus. Klik clipboard dan render window live belum diuji pada perubahan layout ini.

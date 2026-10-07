@@ -16,7 +16,7 @@ Urutan: jalankan `test-login.ps1` dahulu dalam proses PowerShell baru. Direktori
 kerja: root repo EmPorium. Perintah lengkap:
 
 ```powershell
-powershell.exe -NoLogo -NoProfile -File .\scripts\upload-api-ghcr\test-login.ps1
+pwsh -NoLogo -NoProfile -File ..\.artefacts\EmPorium\scripts\ghcr-login-smoke\test-login.ps1
 ```
 
 Hasil yang perlu diperiksa: semua baris PASS (missing login, cached login,
