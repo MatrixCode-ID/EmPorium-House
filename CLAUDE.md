@@ -1,5 +1,17 @@
 # CLAUDE.md
 
+## Push hanya atas permintaan eksplisit pengguna
+
+Keputusan pengguna 2026-10-07; berlaku untuk Codex dan Claude Code, juga repo
+turunan. Push dilakukan **manual oleh pengguna**, kecuali pengguna secara
+eksplisit meminta agent melakukan push. Berlaku untuk semua remote, branch,
+dan tag, termasuk push lewat skrip atau tool lain. Permintaan mengerjakan
+perubahan, membuat commit, menyiapkan repo, atau menyiapkan workflow bukan
+izin untuk push. Setelah pekerjaan lokal selesai, laporkan hasilnya dan
+biarkan pengguna melakukan push; jangan mencoba atau mengulang push tanpa
+permintaan eksplisit. Aturan ini mengesampingkan asumsi izin push dari alur
+kerja atau plan sebelumnya.
+
 File ini memberi panduan bagi Claude Code (claude.ai/code) dan Codex saat bekerja di repo ini.
 
 ## Tentang EmPorium House
