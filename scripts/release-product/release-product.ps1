@@ -241,3 +241,7 @@ try {
 } finally {
     Pop-Location
 }
+# Probes for something that may not exist yet (a release tag, a GitHub Release) leave a non-zero
+# $LASTEXITCODE behind, and the Actions pwsh shell exits with it. Every real failure throws, so reaching
+# this line means success.
+exit 0
