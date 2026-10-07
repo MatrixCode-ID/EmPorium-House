@@ -148,11 +148,43 @@ function Get-RemoteImageLabels([string]$Image, [string]$Tag) {
     return $config.config.Labels
 }
 
-function Wait-EnginePackages([string]$RepoRoot, [string]$Version, [int]$Attempts = 30) {
+function Get-EnginePackageIds([string]$RepoRoot) {
     $packageIds = @(Get-ChildItem (Join-Path $RepoRoot 'src') -Filter '*.csproj' -Recurse -File |
         ForEach-Object { [regex]::Matches((Get-Content $_.FullName -Raw), 'PackageReference\s+Include="(EmSys\.[^"]+)"') } |
         ForEach-Object { $_.Groups[1].Value.ToLowerInvariant() } | Sort-Object -Unique)
     if (-not $packageIds.Count) { throw 'No EmSys package references found.' }
+    return $packageIds
+}
+
+# The highest version present for every package. A version still being pushed (only some packages are
+# on the feed) is skipped, so a scheduled check never picks a half-published engine. Versions that are not
+# valid engine versions are ignored.
+function Select-LatestEngineVersion([hashtable]$VersionsByPackage) {
+    $common = $null
+    foreach ($versions in $VersionsByPackage.Values) {
+        $set = @($versions | ForEach-Object { "$_".ToLowerInvariant() })
+        $common = if ($null -eq $common) { $set } else { @($common | Where-Object { $_ -in $set }) }
+    }
+    $latest = $null
+    foreach ($version in @($common)) {
+        try { ConvertTo-EngineVersion $version | Out-Null } catch { continue }
+        if (-not $latest -or (Compare-EngineVersion $version $latest) -gt 0) { $latest = $version }
+    }
+    return $latest
+}
+
+# Reads the published versions of every EmSys package the product references from nuget.org.
+function Get-LatestEngineVersion([string]$RepoRoot) {
+    $versionsByPackage = @{}
+    foreach ($id in Get-EnginePackageIds $RepoRoot) {
+        $index = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/$id/index.json" -TimeoutSec 30
+        $versionsByPackage[$id] = @($index.versions)
+    }
+    return Select-LatestEngineVersion $versionsByPackage
+}
+
+function Wait-EnginePackages([string]$RepoRoot, [string]$Version, [int]$Attempts = 30) {
+    $packageIds = Get-EnginePackageIds $RepoRoot
     $normalizedVersion = $Version.ToLowerInvariant()
     for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
         $missing = @($packageIds | Where-Object {

@@ -14,6 +14,14 @@ Merge one unpublished version into public `main` when ready to release.
 `release.yml` builds both products before publishing. Source-only merges run CI;
 they do not reserve a version or publish a release.
 
+Engine updates are automatic. After em-system publishes a new EmSys version,
+its `publish-nuget.yml` dispatches `release.yml` here with `emsys_version`
+(needs the `PRODUCT_DISPATCH_TOKEN` secret in em-system). As a fallback,
+`release.yml` also runs once a day (01:17 UTC) and upgrades when nuget.org has an EmSys
+version, published for every referenced package, that is newer than main's
+`EmSysVersion`. The scheduled run never publishes a pending product note on its
+own. A manual dispatch with `emsys_version` still works.
+
 An engine dispatch writes its own product release note and records the new
 `EmSysVersion` in `Directory.Build.props`. The automatic channel and target
 version live in `scripts/release-product/settings.json`. For example, product

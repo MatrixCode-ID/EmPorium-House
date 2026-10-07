@@ -2,11 +2,15 @@ name: Release EmPorium House
 
 # Ordinary source changes run CI. New release notes opt main into a product release.
 # Only the public repository can update main or publish ZIPs and GHCR images.
+# Engine updates: em-system's publish-nuget.yml dispatches emsys_version right after a NuGet release;
+# the daily schedule (01:17 UTC) is the fallback that upgrades when nuget.org has a newer EmSys than main.
 on:
   push:
     branches: [main]
     paths: ['doc/ReleaseNote/**']
     tags: ['v*']
+  schedule:
+    - cron: '17 1 * * *'
   workflow_dispatch:
     inputs:
       emsys_version:

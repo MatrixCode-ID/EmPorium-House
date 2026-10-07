@@ -30,6 +30,12 @@ Assert-Equal (Compare-EngineVersion '0.1.0-alpha.4' '0.1.0-alpha.4') 0 'Identify
 Assert-Equal (Compare-EngineVersion '0.1.0-alpha.3' '0.1.0-alpha.4') -1 'Reject stale engine events'
 Assert-Equal (Compare-EngineVersion '0.1.0' '0.1.0-rc.1') 1 'Compare stable engine versions'
 Assert-Equal (Compare-EngineVersion '0.1.0-0.prealpha.2' '0.1.0-0.prealpha.1') 1 'Accept NuGet prealpha syntax'
+Assert-Equal (Select-LatestEngineVersion @{
+    'emsys.libs' = @('0.1.0-alpha.9', '0.1.0-alpha.10', '0.1.0-alpha.11')
+    'emsys.api.core' = @('0.1.0-alpha.9', '0.1.0-alpha.10')
+}) '0.1.0-alpha.10' 'Pick the newest engine published for every package'
+Assert-Equal (Select-LatestEngineVersion @{ 'emsys.libs' = @('0.1.0-alpha.4', '0.1.0', 'not-a-version') }) '0.1.0' 'Prefer stable and skip invalid versions'
+Assert-Equal (Select-LatestEngineVersion @{ 'emsys.libs' = @('0.1.0-alpha.4'); 'emsys.api.core' = @('0.1.0-alpha.5') }) $null 'No common engine version'
 Assert-Rejected { ConvertTo-EngineVersion '0.1.0-alpha.01' } 'Leading zero prerelease identifier'
 Assert-Rejected { ConvertTo-EngineVersion '0.1.0-alpha.5; echo secret' } 'Unsafe version input'
 Assert-Rejected { Assert-ProductVersion '0.1.0' } 'Missing product build suffix'

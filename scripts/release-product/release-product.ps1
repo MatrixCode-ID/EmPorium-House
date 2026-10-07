@@ -3,6 +3,7 @@
 Noninteractive helpers for CI and product releases. Running without a mode displays help.
 .DESCRIPTION
 Prepare resolves release notes, and an engine dispatch commits the engine upgrade to main.
+The daily scheduled run does the same when nuget.org has a newer EmSys than main, in case a dispatch was missed.
 BuildWpf creates a self-contained ZIP. Publish pushes GHCR tags and publishes a GitHub Release.
 Prepare and Publish require gh authentication and access to the public product repository.
 These mutating modes are restricted to its GitHub Actions main/tag runs. BuildWpf also works locally.
@@ -42,12 +43,26 @@ try {
         if (@(Invoke-Checked git @('status', '--porcelain')).Count) { throw 'The release checkout must be clean.' }
         Invoke-Checked git @('fetch', '--no-tags', 'origin', 'main') | Out-Null
         Invoke-Checked git @('fetch', '--tags', 'origin') | Out-Null
-        if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch') {
+        $scheduled = $env:GITHUB_EVENT_NAME -eq 'schedule'
+        if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch' -or $scheduled) {
             if ($env:GITHUB_REF -ne 'refs/heads/main') { throw 'Dispatch product releases on main.' }
             Invoke-Checked git @('checkout', '--detach', 'origin/main') | Out-Null
         }
         Invoke-Checked git @('merge-base', '--is-ancestor', 'HEAD', 'origin/main') | Out-Null
         $currentEngine = Get-EngineVersion $repoRoot
+        # The scheduled run is the fallback for a missed engine dispatch: it only acts on an engine that is
+        # newer than main's, and never publishes a pending product note on its own.
+        if ($scheduled) {
+            if ($EngineVersion -or $Version) { throw 'A scheduled run selects the engine version itself.' }
+            $latestEngine = Get-LatestEngineVersion $repoRoot
+            if (-not $latestEngine -or (Compare-EngineVersion $latestEngine $currentEngine) -le 0) {
+                Write-Host "::notice::EmSys $currentEngine is up to date; nothing to release."
+                Set-ReleaseOutputs @{ version = ''; sha = ''; engine = $currentEngine; image = $settings.image }
+                exit 0
+            }
+            Write-Host "::notice::EmSys $latestEngine is on nuget.org; upgrading from $currentEngine."
+            $EngineVersion = $latestEngine
+        }
         $releaseJson = (Invoke-Checked gh @('release', 'list', '--repo', $repository, '--limit', '1000', '--json', 'tagName,isDraft')) -join "`n"
         $releases = @($releaseJson | ConvertFrom-Json)
         $published = @($releases | Where-Object { -not $_.isDraft } | ForEach-Object { $_.tagName -replace '^v', '' })
@@ -58,8 +73,8 @@ try {
         $reserved = @($gitVersions) + @($registryVersions) + @($notes | ForEach-Object Version)
 
         if ($EngineVersion) {
-            if ($env:GITHUB_EVENT_NAME -ne 'workflow_dispatch' -or $env:GITHUB_REF -ne 'refs/heads/main') {
-                throw 'Engine updates require workflow_dispatch on main.'
+            if ($env:GITHUB_EVENT_NAME -notin @('workflow_dispatch', 'schedule') -or $env:GITHUB_REF -ne 'refs/heads/main') {
+                throw 'Engine updates require workflow_dispatch or the schedule on main.'
             }
             $comparison = Compare-EngineVersion $EngineVersion $currentEngine
             if ($comparison -lt 0) {

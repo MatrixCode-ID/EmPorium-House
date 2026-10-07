@@ -168,6 +168,19 @@ Release note yang sudah terbit tidak diubah. Workflow dari em-system dan token
 lintas repo adalah pekerjaan terpisah; persiapan ini tidak merilis produk baru.
 Panduan: `doc/development-workspace.md`, `doc/ReleaseNote/README.md`.
 
+Pembaruan 2026-10-08 (bot update engine, keputusan pengguna: dua pemicu): update
+engine kini otomatis. `publish-nuget.yml` di em-system, setelah paket terbit,
+memanggil `release.yml` di sini dengan `emsys_version` (job `notify-products`,
+butuh secret `PRODUCT_DISPATCH_TOKEN` di em-system: token fine-grained dengan
+"Actions: Read and write" pada repo ini; gagal dispatch tidak menggagalkan rilis
+NuGet). Cadangannya jadwal harian di `release.yml` (`cron: '17 1 * * *'`, 01:17 UTC = 08:17 WIB): job
+Prepare mencari versi EmSys tertinggi yang ada untuk semua paket yang dirujuk di
+nuget.org dan baru bertindak bila lebih tinggi dari `EmSysVersion` di `main`;
+run terjadwal tidak pernah merilis release note produk yang tertunda sendirian.
+Setelah bot mendorong commit ke `main`, tarik `origin/main` ke `work-bench`.
+Catatan GitHub: jadwal di repo publik dimatikan otomatis setelah 60 hari tanpa
+aktivitas repo.
+
 Struktur skrip baru mengikuti em-system: root `scripts/` berisi wrapper `.cmd`,
 implementasi PowerShell/resource di subfolder bernama sama; wrapper memakai
 PowerShell 7, cek PATH, CRLF, dan selalu pause. Komentar kode serta pesan skrip/
