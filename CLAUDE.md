@@ -12,7 +12,29 @@ biarkan pengguna melakukan push; jangan mencoba atau mengulang push tanpa
 permintaan eksplisit. Aturan ini mengesampingkan asumsi izin push dari alur
 kerja atau plan sebelumnya.
 
-File ini memberi panduan bagi Claude Code (claude.ai/code) dan Codex saat bekerja di repo ini.
+## Uji visual (GUI) hanya atas konfirmasi; uji console langsung jalan
+
+Keputusan pengguna 2026-10-08; berlaku untuk Codex dan Claude Code, juga repo
+turunan (em-system, EmPorium House, osha-csm). Uji visual makan token (build
+lama, render PNG, membaca gambar), uji console murah.
+
+- **Uji visual/GUI** (harness render layar WPF/MAUI ke PNG, screenshot, membuka
+  aplikasi untuk dilihat): hanya untuk **GUI atau control baru**, dan hanya
+  setelah **konfirmasi pengguna** atau atas **perintah eksplisit**. Perubahan
+  pada layar yang sudah ada tidak diuji visual kecuali diminta. Bila tidak
+  dijalankan, catat verifikasi visual sebagai tertunda di laporan.
+- **Uji lewat console** (build, `dotnet test`, unit test view model, cek XAML
+  tanpa render yang melaporkan teks, smoke konsol, uji HTTP): **jalankan
+  langsung** tanpa bertanya, termasuk harness console yang dibuat agent di
+  `..\.artefacts\`.
+- Agent boleh **membuat sendiri** harness console tanpa izin terlebih dulu,
+  mis. alur login ke API lalu memanggil action GET/POST dan memeriksa
+  hasilnya, smoke service terhadap database, atau cek XAML berbasis teks.
+  Simpan di `..\.artefacts\<nama-repo>\scripts\<nama>-smoke\` sesuai aturan
+  lokasi uji; kredensial diambil dari konfigurasi lokal di `..\.artefacts\`,
+  tidak ditulis ke repo.
+- Aturan ini mengesampingkan aturan lain yang mewajibkan verifikasi
+  render/harness visual setelah implementasi.
 
 ## Tentang EmPorium House
 
@@ -59,7 +81,8 @@ Keputusan cakupan (2026-10-02): EmPorium House dilebarkan menjadi platform infra
 | `src/modules/` | Modul produk, satu folder per modul |
 | `doc/`, `plan/`, `scripts/` | Dokumentasi, task (`plan/unexecuted`, `plan/executed`), dan skrip |
 
-- Penamaan mengikuti em-system: host `EmPoriumHouse.Api` dan `EmPoriumHouse.Ui.Wpf`; modul memakai pola `Em.Test`, yaitu `src/modules/EmPoriumHouse.<Modul>/EmPoriumHouse.<Modul>.{Models,Api,Models.Ui,Wpf}`. Host WPF memakai `<AssemblyName>EmPoriumHouse</AssemblyName>`, jadi exe-nya `EmPoriumHouse.exe` (folder dan project tetap `EmPoriumHouse.Ui.Wpf`). Klien WPF single file dibagikan sebagai arsip `EmPorium-House.<versi>.zip` (isi `EmPoriumHouse.exe`) yang diunggah ke GitHub Release `v<versi>`, dibuat lewat `scripts\publish-wpf.cmd`; semua keluarannya, termasuk data sementara, ada di artefak lokal `..\.artefacts\EmPoriumelease\` (bukan di repo). Versi ditanyakan seperti skrip container. Bukan paket NuGet: GitHub Packages tidak menyimpan exe/zip.
+- Penamaan mengikuti em-system: host `EmPoriumHouse.Api` dan `EmPoriumHouse.Ui.Wpf`; modul memakai pola `Em.Test`, yaitu `src/modules/EmPoriumHouse.<Modul>/EmPoriumHouse.<Modul>.{Models,Api,Models.Ui,Wpf}`. Host WPF memakai `<AssemblyName>EmPoriumHouse</AssemblyName>`, jadi exe-nya `EmPoriumHouse.exe` (folder dan project tetap `EmPoriumHouse.Ui.Wpf`). Klien WPF single file dibagikan sebagai arsip `EmPorium-House.<versi>.zip` (isi `EmPoriumHouse.exe`) yang diunggah ke GitHub Release `v<versi>`, dibuat lewat `scripts\publish-wpf.cmd`; semua keluarannya, termasuk data sementara, ada di artefak lokal `..\.artefacts\EmPorium
+elease\` (bukan di repo). Versi ditanyakan seperti skrip container. Bukan paket NuGet: GitHub Packages tidak menyimpan exe/zip.
 - Setiap host punya solution sendiri: `src/backend/EmPoriumHouse.Api.slnx` dan `src/frontend/EmPoriumHouse.Ui.Wpf.slnx`. Tidak ada solution di root. Engine datang dari paket `EmSys.*`, tidak terdaftar di solution.
 - Host MAUI belum ada dan belum direncanakan.
 
