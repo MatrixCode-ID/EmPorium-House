@@ -21,3 +21,4 @@
 - PowerShell syntax, actionlint and `git diff --check` passed.
 - The historical GHCR login harness remains for manual execution as documented; relocation and syntax checking do not claim its previously blocked run succeeded.
 - Permanent guidance recorded in EmPorium House and em-system; existing contents preserved. The unrelated em-system task file was left untouched.
+- EmPorium changes committed locally. Three attempts to push `private/work-bench` were rejected by GitHub with `Internal Server Error`; the remote remains at the preceding commit. Public `main` has not been updated because the private push could not finish. No GitHub CI run for this correction is claimed.
