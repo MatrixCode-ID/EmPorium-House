@@ -10,6 +10,11 @@ Start with `# EmPorium House <version>`, then `## Summary` with a short paragrap
 Add `## New features`, `## Fixes`, `## Breaking changes`, and `## Upgrade notes`
 when relevant. These notes become the GitHub Release description.
 
+Raise `<Version>` in `Directory.Build.props` to the same version in the change that adds the
+note, so local builds of the API and the desktop client carry it. CI builds with the newest note
+version (`-p:Version`, and `APP_VERSION` for the image) and warns when `Directory.Build.props` lags
+behind; `release.yml` always passes the release version. An engine update raises `<Version>` itself.
+
 Merge one unpublished version into public `main` when ready to release.
 `release.yml` builds both products before publishing. Source-only merges run CI;
 they do not reserve a version or publish a release.

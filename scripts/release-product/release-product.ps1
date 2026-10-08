@@ -104,6 +104,8 @@ try {
                 $propsPath = Join-Path $repoRoot 'Directory.Build.props'
                 $props = Get-Content -LiteralPath $propsPath -Raw
                 $props = [regex]::Replace($props, '(?<=<EmSysVersion>)[^<]+(?=</EmSysVersion>)', $EngineVersion)
+                # Local builds carry the product version of the note this upgrade belongs to.
+                $props = Set-ProductVersionText $props ([IO.Path]::GetFileNameWithoutExtension($notePath))
                 [IO.File]::WriteAllText($propsPath, $props)
                 Invoke-Checked git @('config', 'user.name', 'github-actions[bot]') | Out-Null
                 Invoke-Checked git @('config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com') | Out-Null
@@ -131,6 +133,10 @@ try {
             exit 0
         }
         if ($pending.Version -notin $published) { Assert-ReleaseIncreases $pending.Version $published }
+        $localVersion = Get-ProductVersion $repoRoot
+        if ($localVersion -ne $pending.Version) {
+            Write-Host "::warning::Directory.Build.props has Version $localVersion, not $($pending.Version); the release build passes the right version, but raise it with the release note."
+        }
         # Resume a draft from its original tag when main has advanced since preparation.
         if ($pending.Version -in $gitVersions -and $env:GITHUB_EVENT_NAME -eq 'workflow_dispatch') {
             Invoke-Checked git @('checkout', '--detach', "v$($pending.Version)") | Out-Null

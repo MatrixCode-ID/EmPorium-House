@@ -14,14 +14,15 @@ EXPOSE 8080
 FROM base AS build
 RUN apk add --no-cache dotnet10-sdk
 ARG BUILD_CONFIGURATION=Release
-ARG APP_VERSION=1.0.0
+# Optional version override (release.yml and the WPF publisher pass it); empty keeps Directory.Build.props.
+ARG APP_VERSION=
 WORKDIR /src/emporium-house
 # The engine comes from the EmSys.* packages on nuget.org (version in Directory.Build.props).
 COPY Directory.Build.props ./
 COPY src/backend/EmPoriumHouse.Api/ src/backend/EmPoriumHouse.Api/
 RUN dotnet publish src/backend/EmPoriumHouse.Api/EmPoriumHouse.Api.csproj \
     --configuration "$BUILD_CONFIGURATION" --output /publish \
-    /p:UseAppHost=false /p:Version="$APP_VERSION"
+    /p:UseAppHost=false ${APP_VERSION:+"/p:Version=$APP_VERSION"}
 
 FROM base AS final
 RUN addgroup -S -g 1654 em && adduser -S -D -u 1654 -G em em \

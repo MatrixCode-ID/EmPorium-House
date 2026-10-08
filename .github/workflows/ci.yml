@@ -48,8 +48,13 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      - name: Resolve version
+        shell: pwsh
+        run: |
+          . ./scripts/release-product/release-common.ps1
+          Set-CiVersion (Get-Location).Path | Out-Null
       - name: Build API
-        run: dotnet build src/backend/EmPoriumHouse.Api.slnx --configuration Release
+        run: dotnet build src/backend/EmPoriumHouse.Api.slnx --configuration Release "-p:Version=${{ env.PRODUCT_VERSION }}"
 
   build-wpf:
     runs-on: windows-latest
@@ -58,14 +63,24 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      - name: Resolve version
+        shell: pwsh
+        run: |
+          . ./scripts/release-product/release-common.ps1
+          Set-CiVersion (Get-Location).Path | Out-Null
       - name: Build desktop client
-        run: dotnet build src/frontend/EmPoriumHouse.Ui.Wpf.slnx --configuration Release
+        run: dotnet build src/frontend/EmPoriumHouse.Ui.Wpf.slnx --configuration Release "-p:Version=${{ env.PRODUCT_VERSION }}"
 
   build-container:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
+      - name: Resolve version
+        shell: pwsh
+        run: |
+          . ./scripts/release-product/release-common.ps1
+          Set-CiVersion (Get-Location).Path | Out-Null
       - name: Build API container without publishing
         uses: docker/build-push-action@v6
         with:
@@ -74,4 +89,5 @@ jobs:
           push: false
           build-args: |
             BUILD_CONFIGURATION=Release
+            APP_VERSION=${{ env.PRODUCT_VERSION }}
             TZ=Asia/Jakarta

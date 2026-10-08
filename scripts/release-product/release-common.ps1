@@ -205,3 +205,42 @@ function Set-ReleaseOutputs([hashtable]$Values) {
     }
     Write-Host ($Values | ConvertTo-Json -Compress)
 }
+
+# The newest product release note version, or $null when there is none. Channels rank prealpha < alpha < beta < release.
+function Get-LatestReleaseNoteVersion([string]$RepoRoot) {
+    $rank = @{ prealpha = 0; alpha = 1; beta = 2; release = 3 }
+    $versions = @(Get-ReleaseNotes $RepoRoot | ForEach-Object Version)
+    $latest = @(Get-VersionTags $versions |
+        Sort-Object -Property Version, @{ Expression = { $rank[$_.Channel] } }, Build -Descending) | Select-Object -First 1
+    if ($latest) { return $latest.Tag }
+    return $null
+}
+
+# The product version local builds carry: <Version> in Directory.Build.props, or $null.
+function Get-ProductVersion([string]$RepoRoot) {
+    [xml]$props = Get-Content (Join-Path $RepoRoot 'Directory.Build.props') -Raw
+    $node = $props.SelectSingleNode('/Project/PropertyGroup/Version')
+    if ($node) { return $node.InnerText.Trim() }
+    return $null
+}
+
+# Directory.Build.props text with <Version> set to $Version (the element must already exist).
+function Set-ProductVersionText([string]$Props, [string]$Version) {
+    Assert-ProductVersion $Version | Out-Null
+    if ($Props -cnotmatch '<Version>[^<]*</Version>') { throw 'Directory.Build.props must define Version.' }
+    return [regex]::Replace($Props, '(?<=<Version>)[^<]*(?=</Version>)', $Version)
+}
+
+# Resolves the CI build version: the newest release note, written to GITHUB_ENV as PRODUCT_VERSION.
+# Warns when Directory.Build.props still carries another version for local builds.
+function Set-CiVersion([string]$RepoRoot) {
+    $version = Get-LatestReleaseNoteVersion $RepoRoot
+    if (-not $version) { throw 'No product release note found under doc/ReleaseNote.' }
+    $local = Get-ProductVersion $RepoRoot
+    if ($local -ne $version) {
+        Write-Host "::warning::Directory.Build.props has Version $local; the newest release note is $version. Update it so local builds match."
+    }
+    Write-Host "Build version: $version"
+    if ($env:GITHUB_ENV) { "PRODUCT_VERSION=$version" >> $env:GITHUB_ENV }
+    return $version
+}

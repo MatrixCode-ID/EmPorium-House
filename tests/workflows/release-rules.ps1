@@ -57,6 +57,16 @@ Assert-Equal (Get-PendingReleaseNote $notes @('0.1.0-alpha.5')) $null 'Exclude p
 Assert-Rejected { Get-PendingReleaseNote @(Get-ReleaseNotes $FixtureDirectory) @() } 'Two pending releases'
 [IO.File]::WriteAllText((Join-Path $noteDirectory '0.1.0-alpha.6.md'), "# Product`n`n## Summary`n`n## Fixes`n`nA fix.`n")
 Assert-Rejected { Get-ReleaseNotes $FixtureDirectory } 'Empty summary followed by another section'
+[IO.File]::WriteAllText((Join-Path $noteDirectory '0.1.0-alpha.6.md'), "# Product`n`n## Summary`n`nAnother change.`n")
+[IO.File]::WriteAllText((Join-Path $noteDirectory '0.1.0-alpha.10.md'), "# Product`n`n## Summary`n`nLater change.`n")
+Assert-Equal (Get-LatestReleaseNoteVersion $FixtureDirectory) '0.1.0-alpha.10' 'Newest note compares build numbers'
+[IO.File]::WriteAllText((Join-Path $noteDirectory '0.1.0-beta.1.md'), "# Product`n`n## Summary`n`nBeta.`n")
+Assert-Equal (Get-LatestReleaseNoteVersion $FixtureDirectory) '0.1.0-beta.1' 'Newest note ranks beta above alpha'
+$props = "<Project>`n  <PropertyGroup>`n    <EmSysVersion>0.1.0-alpha.6</EmSysVersion>`n    <Version>0.1.0-alpha.5</Version>`n  </PropertyGroup>`n</Project>`n"
+$updated = Set-ProductVersionText $props '0.1.0-alpha.6'
+Assert-Equal ([regex]::Match($updated, '<Version>([^<]+)</Version>').Groups[1].Value) '0.1.0-alpha.6' 'Set the product version'
+Assert-Equal ([regex]::Match($updated, '<EmSysVersion>([^<]+)</EmSysVersion>').Groups[1].Value) '0.1.0-alpha.6' 'Leave the engine version alone'
+Assert-Rejected { Set-ProductVersionText '<Project />' '0.1.0-alpha.6' } 'Missing Version element'
 Assert-Equal (ConvertFrom-RegistryResponse @{ Content = '{"schemaVersion":2}' }).schemaVersion 2 'Decode a JSON manifest'
 Assert-Equal (ConvertFrom-RegistryResponse @{ Content = [Text.Encoding]::UTF8.GetBytes('{"schemaVersion":2}') }).schemaVersion 2 'Decode a binary OCI response'
 Write-Host "$checks release-rule checks passed."

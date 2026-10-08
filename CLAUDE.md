@@ -35,6 +35,14 @@ lama, render PNG, membaca gambar), uji console murah.
   tidak ditulis ke repo.
 - Aturan ini mengesampingkan aturan lain yang mewajibkan verifikasi
   render/harness visual setelah implementasi.
+- Harness **tidak boleh membuat berkas apa pun di repo** (keputusan pengguna
+  2026-10-08), juga saat dijalankan dari root repo: output bawaan adalah folder
+  `out` milik harness, dihitung dari lokasi source-nya, bukan folder kerja.
+  Harness C# me-link `..\.artefacts\<nama-repo>\scripts\_shared\HarnessPaths.cs`
+  (salinan dari em-system; `HarnessPaths.Output()` menolak folder di dalam repo
+  git), skrip PowerShell/Python memakai `$PSScriptRoot`/`__file__`. Hasil yang
+  dibutuhkan repo disalin manual dari `out`. Menjalankan harness GUI/render,
+  termasuk menjalankan ulang harness lama, selalu menunggu konfirmasi pengguna.
 
 ## Tentang EmPorium House
 
