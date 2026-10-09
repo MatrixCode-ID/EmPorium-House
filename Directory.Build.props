@@ -2,10 +2,10 @@
   <PropertyGroup>
     <!-- Version of the em-system engine packages (EmSys.*) on nuget.org. Every engine reference is a
          PackageReference with this version; change it here to move all hosts to another engine release. -->
-    <EmSysVersion>0.1.0-alpha.7</EmSysVersion>
+    <EmSysVersion>0.1.0-alpha.8</EmSysVersion>
     <!-- Product version of the API and the desktop client: the newest doc/ReleaseNote version. Raise it with
          every new release note; CI and release.yml pass the release note version with -p:Version. -->
-    <Version>0.1.0-alpha.6</Version>
+    <Version>0.1.0-alpha.7</Version>
     <!-- Machine-local files that never enter the repository (debug keys, private configuration), one folder per
          repository. The default is a sibling folder (..\.artefacts\EmPorium); override it with an environment variable or `-p:ArtefactsPath=<path>`. -->
     <ArtefactsPath Condition="'$(ArtefactsPath)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '.artefacts', 'EmPorium'))</ArtefactsPath>
