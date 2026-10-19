@@ -234,3 +234,10 @@ Harness lama `scripts/module-card-qa` kini di
 juga dipindahkan ke artefak. Pemeriksaan aturan rilis CI kini di
 `tests/workflows/release-rules.ps1`. Path lama pada catatan historis di atas
 merujuk lokasi sebelum pemindahan ini.
+
+Pembaruan 2026-10-19 (saklar fitur dari server, keputusan pengguna): fitur selain standar engine dinyalakan dari
+konfigurasi server, bukan dengan mengubah `Program.cs`: `"modules": { "containerRegistry": true, "cdn": false,
+"nuget": false }` di `emapi-config.json`, atau `EM_MODULE_<NAMA>=true|false` (dibaca `Helper.ApplyConfig`, pola sama
+dengan host `Em.Api`). Bawaan: registry on, CDN dan NuGet off. Engine tidak diubah. Home WPF mengikuti server tanpa
+setup client: kartu hanya tampil bila manager-nya bisa dibuka (modul dideklarasikan server) dan disingkirkan bila
+server menjawab 404. Format config tetap JSON milik engine (YAML ditolak); saklar boleh diisi dari `environment:` Compose.

@@ -10,6 +10,18 @@ internal static class Helper
    /// <summary>Environment variable holding an explicit path to emapi-config.json, e.g. a file mounted into a container.</summary>
    public const string ConfigPathVariable = "EM_API_CONFIG";
 
+   /// <summary>Prefix of the environment variables that switch modules; the rest of the name is the module name (<c>EM_MODULE_CDN</c> → <c>cdn</c>).</summary>
+   public const string ModuleVariablePrefix = "EM_MODULE_";
+
+   /// <summary>Module name of the container registry; on unless turned off.</summary>
+   public const string ContainerRegistryModule = "containerRegistry";
+
+   /// <summary>Module name of the CDN; off unless turned on.</summary>
+   public const string CdnModule = "cdn";
+
+   /// <summary>Module name of the NuGet server (NuPak); off unless turned on.</summary>
+   public const string NuGetModule = "nuget";
+
    /// <summary>
    /// Loads emapi-config.json from <c>EM_API_CONFIG</c>, or from the build output where the build copies
    /// <c>$(ArtefactsPath)config\emapi-config.json</c>. Returns false when neither file exists.
@@ -67,6 +79,22 @@ internal static class Helper
          var token = new EmApiConfig.DebugTokenSection { PublicKey = publicKey };
          config.DebugTokens.RemoveAll(t => string.Equals(t.Name, token.Name, StringComparison.OrdinalIgnoreCase));
          config.DebugTokens.Add(token);
+      }
+
+      // EM_MODULE_<NAME>=true|false switches modules["<name>"], e.g. EM_MODULE_CDN=true from Compose or docker run -e.
+      foreach (var entry in Environment.GetEnvironmentVariables().Cast<System.Collections.DictionaryEntry>()) {
+         if (entry.Key is not string name || !name.StartsWith(ModuleVariablePrefix, StringComparison.OrdinalIgnoreCase)) continue;
+         var module = name[ModuleVariablePrefix.Length..];
+         if (module.Length == 0 || Read(name) is not { } value) continue;
+         if (!bool.TryParse(value, out var enabled)) {
+            throw new InvalidOperationException($"{name} must be true or false.");
+         }
+
+         foreach (var key in config.Modules.Keys.Where(k => string.Equals(k, module, StringComparison.OrdinalIgnoreCase)).ToList()) {
+            config.Modules.Remove(key);
+         }
+
+         config.Modules[module] = enabled;
       }
    }
 

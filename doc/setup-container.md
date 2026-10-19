@@ -258,7 +258,7 @@ Kedua cara memakai volume yang berbeda: Compose dari source memakai `emporium-ho
 | `ALPINE_VERSION` | Build argument | `3.23` | Versi base image. Ganti lewat `docker build --build-arg ALPINE_VERSION=...` dan pastikan paket .NET 10 tersedia. Compose tidak meneruskan nilai ini. |
 | `ASPNETCORE_URLS` | ASP.NET Core | `http://+:8080` | Alamat listen internal. Jika diubah lewat `docker run`, sesuaikan target port `--publish`. |
 
-Timeout HTTP, rate limit, proxy, retensi session token, dan path serta batas storage (CDN, registry, NuGet) diatur di berkas config. Modul yang aktif ditentukan di [Program.cs](../src/backend/EmPoriumHouse.Api/Program.cs).
+Timeout HTTP, rate limit, proxy, retensi session token, dan path serta batas storage (CDN, registry, NuGet) diatur di berkas config. Fitur yang aktif diatur di bagian `modules` berkas config (`containerRegistry` bawaan on, `cdn` dan `nuget` bawaan off) atau lewat `EM_MODULE_CONTAINERREGISTRY`, `EM_MODULE_CDN`, `EM_MODULE_NUGET` (`true`/`false`) yang mengesampingkan berkas; lihat [Program.cs](../src/backend/EmPoriumHouse.Api/Program.cs). Client desktop mengikuti server: fitur yang mati tidak mendapat kartu di home.
 
 ## Storage
 

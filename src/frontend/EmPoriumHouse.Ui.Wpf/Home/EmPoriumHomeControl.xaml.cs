@@ -12,8 +12,9 @@ using UserControl = System.Windows.Controls.UserControl;
 namespace EmPoriumHouse.Home
 {
    /// <summary>
-   /// Layar home EmPorium House: ringkasan modul yang dipasang server (container registry, CDN, NuGet
-   /// yang direncanakan) berikut angka dan alamat pakainya, pintasan administrasi, dan menu module lain.
+   /// Layar home EmPorium House: ringkasan modul yang dinyalakan server (container registry, CDN, NuGet)
+   /// berikut angka dan alamat pakainya, pintasan administrasi, dan menu module lain. Modul yang dimatikan
+   /// di konfigurasi server tidak mendapat kartu, jadi client tidak perlu diatur sendiri.
    /// Angka kartu dimuat ulang setiap pengguna kembali ke home.
    /// </summary>
    public partial class EmPoriumHomeControl : UserControl, INavigationBody
@@ -89,7 +90,7 @@ namespace EmPoriumHouse.Home
          StorageDescription = "Total includes active and recycled versions. Excludes temporary uploads and database/filesystem overhead."
       };
 
-      /// <summary>Kartu modul dalam urutan tampil.</summary>
+      /// <summary>Kartu modul yang tersedia di server, dalam urutan tampil.</summary>
       public ObservableCollection<ModuleCardVm> Modules { get; } = [];
 
       /// <summary>Pintasan layar administrasi yang boleh dibuka pengguna.</summary>
@@ -148,17 +149,13 @@ namespace EmPoriumHouse.Home
          UserText = app.ActiveUser?.cUserAccount is { Length: > 0 } account ? account : "Debug session";
          ServerText = app.ActiveConnection?.Host is { Length: > 0 } host ? host : "No server selected";
 
-         Modules.Clear();
-         Modules.Add(Registry);
-         Modules.Add(Cdn);
-         Modules.Add(NuGet);
-
          BindCard(Registry, RegistryNav);
          BindCard(Cdn, CdnNav);
          BindCard(NuGet, NuGetNav);
          NuGet.ToggleTooltip = "Requires NuGet Settings Manage. Applies immediately.";
          NuGet.ToggleCommand = new UiCommandAsync("nupak.toggle", _ => ToggleNuGetAsync(), _ => CanManageNuGet && !NuGet.IsRefreshing && NuGet.Status is HomeStatus.Ready or HomeStatus.Off);
          BuildTiles();
+         ShowCards();
       }
 
       /// <summary>
@@ -169,10 +166,25 @@ namespace EmPoriumHouse.Home
          if (_app is null) return;
 
          BuildTiles();
+         ShowCards();
          await Task.WhenAll(LoadRegistryAsync(), LoadCdnAsync(), LoadNuGetAsync());
       }
 
       #region Cards
+
+      // Every card the home knows, in display order, with the navigation of its manager.
+      private (ModuleCardVm Card, string NavName)[] Cards => [(Registry, RegistryNav), (Cdn, CdnNav), (NuGet, NuGetNav)];
+
+      // The server decides which modules exist: a module it does not install declares no claim, so its
+      // manager cannot be opened and the card is left out. A module whose claims are always declared
+      // (CDN, registry) but is switched off answers 404 and is removed by ShowFailure. Rebuilt on every
+      // reload so a server whose configuration changed is followed when the user comes back.
+      private void ShowCards() {
+         Modules.Clear();
+         foreach (var (card, navName) in Cards) {
+            if (IsAllowed(navName)) Modules.Add(card);
+         }
+      }
 
       // The open button is wired up front; whether the user may use it is decided here and again when
       // the numbers arrive, because a server that does not run the module answers 404 only then.
@@ -302,15 +314,19 @@ namespace EmPoriumHouse.Home
          catch (Exception) { card.StorageCaption = "Storage: unavailable"; }
       }
 
-      // 404 is the server's way of saying the module is switched off; 401 and 403 mean the account
-      // lacks the claim. Anything else is shown as unavailable rather than raised as an error dialog,
-      // since the home screen must stay usable while one module is down.
-      private static void ShowFailure(ModuleCardVm card, Exception x) {
+      // 404 is the server's way of saying the module is switched off, so the card is removed; 401 and 403
+      // mean the account lacks the claim. Anything else is shown as unavailable rather than raised as an
+      // error dialog, since the home screen must stay usable while one module is down.
+      private void ShowFailure(ModuleCardVm card, Exception x) {
+         if (x is ActionException { StatusCode: 404 }) {
+            Modules.Remove(card);
+            return;
+         }
+
          card.Stats.Clear();
          card.Endpoint = "";
          card.StorageCaption = "Storage: unavailable";
          (card.Status, card.StatusText) = x switch {
-            ActionException { StatusCode: 404 } => (HomeStatus.Off, "Not enabled on this server"),
             ActionException { StatusCode: 401 or 403 } => (HomeStatus.Warning, "No access"),
             _ => (HomeStatus.Warning, "Unavailable")
          };

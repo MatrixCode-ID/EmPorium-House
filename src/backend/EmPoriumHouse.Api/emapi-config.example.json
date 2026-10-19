@@ -18,6 +18,13 @@
   "session": {
     "tokenRetentionHours": 720
   },
+  // Optional features. The engine's standard features (users, roles, robots, tasks) are always on.
+  // EM_MODULE_CONTAINERREGISTRY / EM_MODULE_CDN / EM_MODULE_NUGET=true|false override these.
+  "modules": {
+    "containerRegistry": true,
+    "cdn": false,
+    "nuget": false
+  },
   "storage": {
     "taskCachePath": "./data/tasks",
     "cdnPath": "./data/cdn",

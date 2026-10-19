@@ -1,6 +1,7 @@
 # EmPorium House API
 
-`EmPoriumHouse.Api` hosts the em-system engine with the NuPak NuGet module.
+`EmPoriumHouse.Api` hosts the em-system engine with the container registry, and optionally the CDN and the
+NuPak NuGet server (`modules` in the config file or `EM_MODULE_<NAME>`; see the root README, "Choose the features").
 It runs as a container from [compose.yml](compose.yml) and the Alpine
 [Dockerfile](EmPoriumHouse.Api/Dockerfile). The SDK is installed only in the
 build stage; the final image contains the ASP.NET Core 10 runtime, `tzdata`

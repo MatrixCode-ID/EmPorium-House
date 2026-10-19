@@ -44,13 +44,30 @@ The whole server host is a few lines on top of the engine:
 ```csharp
 var app = EmApp.BuildApp(args, builder => {
    var config = EmPoriumHouse.Api.Helper.ApplyConfig(builder);
-   builder.AddNuPak(config.Storage.NuPakPath, config.Storage.NuPakMaxPackageMb);
-   builder.EnableCdn(config.Storage.CdnPath, config.Storage.CdnMaxFileSizeMb);
-   builder.AddContainerRegistry(config.Storage.RegistryPath);
+   if (config.IsModuleEnabled("containerRegistry", true)) builder.AddContainerRegistry(config.Storage.RegistryPath);
+   if (config.IsModuleEnabled("cdn")) builder.EnableCdn(config.Storage.CdnPath, config.Storage.CdnMaxFileSizeMb);
+   if (config.IsModuleEnabled("nuget")) builder.AddNuPak(config.Storage.NuPakPath, config.Storage.NuPakMaxPackageMb);
 });
 ```
 
-Each feature is one registration line, so you can switch any of them off by removing it.
+## Choose the features
+
+The engine's standard features (users, roles, robots, business tasks) are always on. The others are switched in
+the server configuration; the desktop client follows the server and shows a card only for a feature that is on.
+
+| Feature | Config key | Environment variable | Default |
+| --- | --- | --- | --- |
+| Container registry | `modules.containerRegistry` | `EM_MODULE_CONTAINERREGISTRY` | on |
+| CDN | `modules.cdn` | `EM_MODULE_CDN` | off |
+| NuGet server | `modules.nuget` | `EM_MODULE_NUGET` | off |
+
+```json
+"modules": { "containerRegistry": true, "cdn": false, "nuget": false }
+```
+
+An environment variable (`true` or `false`) overrides the file, so a feature can also be switched from the
+`environment:` section of a Compose file. Restart the server after a change. Turning a feature off keeps its data;
+turning it on again brings it back.
 
 ## Layout
 
@@ -79,7 +96,7 @@ The server stores its data in SQL Server, and the schema is provided by the engi
 | 1 | `sets/` | `000-ulid.sql` (ULID functions used by the column defaults) |
 | 2 | `tables/` | `010-core.sql` (users, roles, sessions, robots, logs, ...) |
 | 3 | `tables/` | `030-registry.sql` (container registry) |
-| 4 | `tables/` | `040-nupak.sql` (NuGet server) |
+| 4 | `tables/` | `040-nupak.sql` (NuGet server; can be skipped, with the `vi_NuPak*` views, while `nuget` is off) |
 | 5 | `views/` | `vi_Address`, `vi_Comm`, `vi_Contact`, `vi_Role`, `vi_User`, `vi_UserCredential`, `vi_NuPakAudit`, `vi_NuPakFeed`, `vi_NuPakPackage`, `vi_NuPakPrefix`, `vi_NuPakVersion` (`.sql`) |
 
 The other scripts in that folder (`020-approval.sql`, `100-business.sql`, `900-emtest.sql`, `vi_TestDoc.sql`, `vi_TestItem.sql`) belong to engine features EmPorium House does not use. The `updates/` folder only holds migrations for databases created with older scripts.
