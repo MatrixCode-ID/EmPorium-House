@@ -288,14 +288,14 @@ namespace EmPoriumHouse.Home
       }
       private async Task ToggleNuGetAsync() {
          if (!CanManageNuGet || NuGet.IsRefreshing) return;
-         if (NuGet.Enabled && System.Windows.MessageBox.Show("Switch off the NuGet server? Clients will receive 404 until enabled again.", "NuGet Server",
-            System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning) != System.Windows.MessageBoxResult.Yes) return;
+         if (NuGet.Enabled && DialogOwner!.ShowMboxDecideWarning(
+                "Switch off the NuGet server? Clients will receive 404 until enabled again.", "NuGet Server") != System.Windows.MessageBoxResult.Yes) return;
          NuGet.IsRefreshing = true;
          try {
             var result = await _app!.ServiceProvider.GetRequiredService<INuPakServices>().PostGetMeta_NuPakSetEnabled(!NuGet.Enabled);
             NuGet.Enabled = result.Enabled; NuGet.Status = result.Enabled ? HomeStatus.Ready : HomeStatus.Off;
             NuGet.StatusText = result.Enabled ? "Ready" : "Off";
-         } catch (Exception ex) { System.Windows.MessageBox.Show(ex.Message, "NuGet Server"); }
+         } catch (Exception ex) { DialogOwner!.ShowMboxError(ex.Message, "NuGet Server"); }
          finally { NuGet.IsRefreshing = false; }
          await LoadNuGetAsync();
       }
